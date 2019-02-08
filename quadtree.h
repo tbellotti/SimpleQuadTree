@@ -7,6 +7,7 @@
 #include <cmath>
 #include <functional>
 #include "cell.h"
+#include "lipschitzfunction.h"
 
 
 template <typename T>
@@ -23,30 +24,35 @@ protected:
 
 
 public:
-    //explicit QuadTree(unsigned int minl) : min_level(minl), max_level(minl) {}
     QuadTree(T xsize, T ysize, unsigned int minl, unsigned int maxl) : 
-            x_size(xsize), y_size(ysize), min_level(minl), max_level(maxl), parent_cell(new Cell<T>(Point<T>(0.0, 0.0), xsize, ysize)) 
-            {
-                std::cout<<"Created QuadTree with base cell."<<std::endl;
-            }
+            x_size(xsize), y_size(ysize), min_level(minl), max_level(maxl), 
+            parent_cell(new Cell<T>(Point<T>(0.0, 0.0), xsize, ysize)) {}
 
 
     void buildUniform() {
         splitHelp(parent_cell, min_level);
-        std::cout<<"Uniform mesh created"<<std::endl;
     }
 
+
+    // Obsolete
     void refineWithCriterion(std::function<bool(Point<T>)> criterion)   
     {
         std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
         refineWithCriterionHelp(criterion, parent_cell, max_level - min_level);
     }
 
+    /*
     void refineWithLevelSet(std::function<T(Point<T>)> level_set)
     {
 
         std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
         refineWithLevelSetHelp(level_set, parent_cell, max_level - min_level);
+    }
+    */
+    void refineWithLevelSet(const LipschitzFunction<T> & level_set)
+    {
+        std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
+        refineWithLevelSetHelp(level_set, parent_cell, max_level);
     }
 
 
@@ -72,7 +78,7 @@ public:
         output_f<<"\\begin{center} \n \\begin{tikzpicture}\n";
 
         for (auto ctr : centers)    {
-            output_f<<"\\draw [fill=blue, line width = 0.1pt]"<<(scale_factor*ctr).print()<<" circle[radius= 0.5pt]; \n";
+            output_f<<"\\draw [fill=blue, line width = 0.1pt]"<<(scale_factor*ctr)<<" circle[radius= 0.5pt]; \n";
 
         }
         output_f<<"\\end{tikzpicture}\n \\end{center} \n \\end{document} \n";
@@ -110,7 +116,6 @@ template <typename T>
 void splitHelp(std::shared_ptr<Cell<T>> cell, unsigned int level_to_go) {
     if (level_to_go > 0)    {
         cell->splitCell();
-        //std::cout<<"Splitting at level = "<<level_to_go<<std::endl;
 
         std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
 
@@ -160,7 +165,7 @@ void refineWithCriterionHelp(std::function<bool(Point<T>)> criterion, std::share
         refineWithCriterionHelp(criterion, children_vector[3], level_to_go - 1);
     } 
 }
-
+/*
 template <typename T>
 void refineWithLevelSetHelp(std::function<T(Point<T>)> level_set, std::shared_ptr<Cell<T>> cell, unsigned int level_to_go)   
 {   
@@ -183,6 +188,30 @@ void refineWithLevelSetHelp(std::function<T(Point<T>)> level_set, std::shared_pt
         refineWithLevelSetHelp(level_set, children_vector[3], level_to_go - 1);
     } 
 }
+*/
+template <typename T>
+void refineWithLevelSetHelp(const LipschitzFunction<T> & level_set, std::shared_ptr<Cell<T>> cell, unsigned int level_to_go)   
+{   
+    bool i_splitted = false;
+    if (level_to_go > 0){
+    if (cell->isLeaf())  {
+        if (std::abs(level_set(cell->getCenter())) <= level_set.getLipschitzConstant() * cell->getDiagonal())   {
+            cell->splitCell();
+            i_splitted = true;
+            std::cout<<"Cell split"<<std::endl;
+        }
+
+    }   
+    if(i_splitted || !cell->isLeaf())    {
+        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+        refineWithLevelSetHelp(level_set, children_vector[0], level_to_go - 1);
+        refineWithLevelSetHelp(level_set, children_vector[1], level_to_go - 1);
+        refineWithLevelSetHelp(level_set, children_vector[2], level_to_go - 1);
+        refineWithLevelSetHelp(level_set, children_vector[3], level_to_go - 1);
+    } 
+    }
+}
    
 template <typename T>
 void exportMeshTikzHelp(std::shared_ptr<Cell<T>> cell, std::ofstream & output_f, double scale_factor)
@@ -196,7 +225,7 @@ void exportMeshTikzHelp(std::shared_ptr<Cell<T>> cell, std::ofstream & output_f,
 
 
         Point<T> ctr = cell->getCenter();
-        output_f<<"\\draw [red] "<<(scale_factor*ctr).print()<<" circle[radius= 0.01pt]; \n";
+        output_f<<"\\draw [red] "<<(scale_factor*ctr)<<" circle[radius= 0.01pt]; \n";
 
     }
     else    {

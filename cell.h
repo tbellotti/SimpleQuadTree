@@ -20,20 +20,16 @@ protected:
     std::shared_ptr<Cell> u_l;
     std::shared_ptr<Cell> u_r;
 
-
-    //
-
-
 public:
-    // COnstructors and destructors
+    // Constructors and destructor
     Cell(Point<T> b_p, T new_dx, T new_dy) : base_point(b_p), dx(new_dx), dy(new_dy), is_leaf(true) {}
-
-
+    ~Cell() = default;
+    
     bool isLeaf() const { return is_leaf; }
 
     Point<T> getCenter() const 
     {
-        return Point<T>(base_point.getX()+0.5*dx, base_point.getY()+0.5*dy);
+        return base_point + Point<T>(0.5*dx, 0.5*dy);
     }
 
     T getDx() const { return dx; }
@@ -41,16 +37,15 @@ public:
 
     T getDiagonal() const { return std::sqrt(dx*dx + dy*dy); } 
 
-
     void splitCell()    
     {
         if (is_leaf)    {
             // Lower Left son
             l_l = std::shared_ptr<Cell<T>>(new Cell<T>(base_point, 0.5*dx, 0.5*dy));
             // Lower right son
-            l_r = std::shared_ptr<Cell<T>>(new Cell<T>(Point<T>(base_point.getX() + 0.5*dx, base_point.getY()), 0.5*dx, 0.5*dy));
+            l_r = std::shared_ptr<Cell<T>>(new Cell<T>(base_point + Point<T>(0.5*dx, 0.0), 0.5*dx, 0.5*dy));
             // Upper left son
-            u_l = std::shared_ptr<Cell<T>>(new Cell<T>(Point<T>(base_point.getX(), base_point.getY() + 0.5*dy), 0.5*dx, 0.5*dy));
+            u_l = std::shared_ptr<Cell<T>>(new Cell<T>(base_point + Point<T>(0.0, 0.5*dy), 0.5*dx, 0.5*dy));
             // Upper right son
             u_r = std::shared_ptr<Cell<T>>(new Cell<T>(getCenter(), 0.5*dx, 0.5*dy));
             // Since it now has children, we set this to false
@@ -84,14 +79,10 @@ public:
     {
         std::vector<Point<T>> to_return;
 
-        Point<T> one = Point<T>(base_point.getX() + dx, base_point.getY());
-        Point<T> two = Point<T>(base_point.getX() + dx, base_point.getY() + dy);
-        Point<T> three = Point<T>(base_point.getX(), base_point.getY() + dy);
-
         to_return.push_back(base_point);
-        to_return.push_back(one);
-        to_return.push_back(two);
-        to_return.push_back(three);
+        to_return.push_back(base_point + Point<T>(dx, 0.0));
+        to_return.push_back(base_point + Point<T>(dx, dy));
+        to_return.push_back(base_point + Point<T>(0.0, dy));
 
         return to_return;
     }

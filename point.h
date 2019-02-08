@@ -3,6 +3,8 @@
 
 #include <cmath>
 #include <string>
+#include <iostream>
+#include <sstream>
 
 /*
 This is a two dimensional point
@@ -20,7 +22,17 @@ public:
     Point() = default;
     Point(T x, T y) : x_coord(x), y_coord(y) {}
     explicit Point(T x) : x_coord(x), y_coord(x) {}
+    Point(const Point & pt) : x_coord(pt.x_coord), y_coord(pt.y_coord) {}
     ~Point() = default;
+
+    // Copy assignment operator
+    Point & operator=(const Point & rhs)
+    {
+        x_coord = rhs.x_coord;
+        y_coord = rhs.y_coord;
+        return *this;
+    }
+
 
     // Getters
     inline T getX() const { return x_coord; }
@@ -32,26 +44,10 @@ public:
     // Print (for debugging purpose)
     std::string print() const
     {
-        std::string tmp("(");
-        tmp += std::to_string(x_coord);
-        tmp += ", ";
-        tmp += std::to_string(y_coord);
-        tmp += ")";
-
-        return tmp;
+        std::ostringstream buffer;
+        buffer<<"("<<std::to_string(x_coord)<<", "<<std::to_string(y_coord)<<")";
+        return buffer.str();
     }
-
-    // Other operations
-    bool operator==(Point & rhs)
-    {   // TO BE COMPLETED
-        return true;
-    }
-
-    Point<T> operator+ (Point<T> rhs)
-    {
-        return Point<T>(x_coord+rhs.x_coord, y_coord+rhs.y_coord);
-    }
-
 
     T abs() const
     {
@@ -71,6 +67,20 @@ Point<T> operator* (T lhs, Point<T> rhs)
 {
     return Point<T>(lhs*rhs.getX(), lhs*rhs.getY());
 }
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Point<T> & pt)
+{
+    os<<"("<<std::to_string(pt.getX())<<", "<<std::to_string(pt.getY())<<")";
+    return os;
+}
+
+template <typename T>
+Point<T> operator+ (const Point<T> & lhs, const Point<T> & rhs)
+{
+    return Point<T>(lhs.getX() + rhs.getX(), lhs.getY() + rhs.getY());       
+}
+
 
 
 #endif
