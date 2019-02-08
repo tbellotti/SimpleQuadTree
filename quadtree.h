@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
+#include <cmath>
 #include <functional>
 #include "cell.h"
 
@@ -44,7 +45,8 @@ public:
     void refineWithLevelSet(std::function<T(Point<T>)> level_set)
     {
 
-        // Complete and think...
+        std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
+        refineWithLevelSetHelp(level_set, parent_cell, max_level - min_level);
     }
 
 
@@ -57,7 +59,7 @@ public:
 
     }
 
-    void exportTikz(std::string filename) const
+    void exportCentersTikz(std::string filename) const
     {
         double scale_factor = 8.0;
         std::vector<Point<T>> centers = getCenters();
@@ -80,6 +82,26 @@ public:
 
     }
 
+    void exportMeshTikz(std::string filename) const
+    {
+        double scale_factor = 8.0;
+
+        std::ofstream output_f;
+        output_f.open (filename);
+        output_f<<"\\documentclass[a4paper,11pt, final]{article}\n";
+        output_f<<"\\usepackage{tikz} \n";
+        output_f<<"\\begin{document}\n";
+        output_f<<"\\begin{center} \n \\begin{tikzpicture}\n";
+
+
+        exportMeshTikzHelp(parent_cell, output_f, scale_factor);
+
+        output_f<<"\\end{tikzpicture}\n \\end{center} \n \\end{document} \n";
+
+
+        output_f.close();
+
+    }
 
 };
 
@@ -139,7 +161,55 @@ void refineWithCriterionHelp(std::function<bool(Point<T>)> criterion, std::share
     } 
 }
 
+template <typename T>
+void refineWithLevelSetHelp(std::function<T(Point<T>)> level_set, std::shared_ptr<Cell<T>> cell, unsigned int level_to_go)   
+{   
+    bool i_splitted = false;
+    if (cell->isLeaf() && level_to_go > 0)  {
+        if (std::abs(level_set(cell->getCenter())) <= 1.0*cell->getDiagonal())   {
+            cell->splitCell();
+            i_splitted = true;
+            std::cout<<"Cell split"<<std::endl;
+        }
+
+    }   
+    if(i_splitted || !cell->isLeaf())    {
+        // It has to be factorized using callable objects
+        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+        refineWithLevelSetHelp(level_set, children_vector[0], level_to_go - 1);
+        refineWithLevelSetHelp(level_set, children_vector[1], level_to_go - 1);
+        refineWithLevelSetHelp(level_set, children_vector[2], level_to_go - 1);
+        refineWithLevelSetHelp(level_set, children_vector[3], level_to_go - 1);
+    } 
+}
    
+template <typename T>
+void exportMeshTikzHelp(std::shared_ptr<Cell<T>> cell, std::ofstream & output_f, double scale_factor)
+{
+    if (cell->isLeaf()) {
+        std::vector<Point<T>> vertices = cell->getVertices();
+        output_f<<"\\draw "<<(scale_factor*vertices[0]).print()<<" -- "<<(scale_factor*vertices[1]).print()<<"; \n";
+        output_f<<"\\draw "<<(scale_factor*vertices[1]).print()<<" -- "<<(scale_factor*vertices[2]).print()<<"; \n";
+        output_f<<"\\draw "<<(scale_factor*vertices[2]).print()<<" -- "<<(scale_factor*vertices[3]).print()<<"; \n";
+        output_f<<"\\draw "<<(scale_factor*vertices[3]).print()<<" -- "<<(scale_factor*vertices[0]).print()<<"; \n";
+
+
+        Point<T> ctr = cell->getCenter();
+        output_f<<"\\draw [red] "<<(scale_factor*ctr).print()<<" circle[radius= 0.01pt]; \n";
+
+    }
+    else    {
+        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+        exportMeshTikzHelp(children_vector[0], output_f, scale_factor);
+        exportMeshTikzHelp(children_vector[1], output_f, scale_factor);
+        exportMeshTikzHelp(children_vector[2], output_f, scale_factor);
+        exportMeshTikzHelp(children_vector[3], output_f, scale_factor);
+    }
+
+}
+
 
 #endif
 

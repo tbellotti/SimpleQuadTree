@@ -39,7 +39,7 @@ public:
     T getDx() const { return dx; }
     T getDy() const { return dy; }
 
-    T getDiagonal() const { return base_point.distance(base_point + Point<T>(dx, dy)); } 
+    T getDiagonal() const { return std::sqrt(dx*dx + dy*dy); } 
 
 
     void splitCell()    
@@ -65,6 +65,33 @@ public:
         to_return.push_back(l_r);
         to_return.push_back(u_l);
         to_return.push_back(u_r);
+
+        return to_return;
+    }
+
+    /*
+    3        2
+     --------
+    |        |
+    |        | 
+    |        |
+    |        |
+     --------
+    0        1    
+    */
+
+    std::vector<Point<T>> getVertices() const
+    {
+        std::vector<Point<T>> to_return;
+
+        Point<T> one = Point<T>(base_point.getX() + dx, base_point.getY());
+        Point<T> two = Point<T>(base_point.getX() + dx, base_point.getY() + dy);
+        Point<T> three = Point<T>(base_point.getX(), base_point.getY() + dy);
+
+        to_return.push_back(base_point);
+        to_return.push_back(one);
+        to_return.push_back(two);
+        to_return.push_back(three);
 
         return to_return;
     }
