@@ -11,9 +11,14 @@ class Cell
 {
 protected:
     Point<T> base_point;
+
+    // Should be changed storing the level because it consumes less memory
+    // and the dx can be retrived by knowing the whole tree.
     T dx;
     T dy;
-    bool is_leaf;
+    //bool is_leaf;
+    // I could eliminate this boolean and check
+    // for every child to be a null pointer.
 
     std::shared_ptr<Cell> l_l;
     std::shared_ptr<Cell> l_r;
@@ -22,10 +27,15 @@ protected:
 
 public:
     // Constructors and destructor
-    Cell(Point<T> b_p, T new_dx, T new_dy) : base_point(b_p), dx(new_dx), dy(new_dy), is_leaf(true) {}
+    Cell(Point<T> b_p, T new_dx, T new_dy) : base_point(b_p), dx(new_dx), dy(new_dy) {} //, is_leaf(true) {}
     ~Cell() = default;
     
-    bool isLeaf() const { return is_leaf; }
+    //bool isLeaf() const { return is_leaf; }
+    bool isLeaf() const
+    {
+        return (!l_l && !l_r && !u_l && !u_r);
+    }
+
 
     Point<T> getCenter() const 
     {
@@ -39,7 +49,7 @@ public:
 
     void splitCell()    
     {
-        if (is_leaf)    {
+        if (isLeaf())    {
             // Lower Left son
             l_l = std::shared_ptr<Cell<T>>(new Cell<T>(base_point, 0.5*dx, 0.5*dy));
             // Lower right son
@@ -49,8 +59,17 @@ public:
             // Upper right son
             u_r = std::shared_ptr<Cell<T>>(new Cell<T>(getCenter(), 0.5*dx, 0.5*dy));
             // Since it now has children, we set this to false
-            is_leaf = false;
+            //is_leaf = false;
         }
+    }
+
+    void mergeCell()
+    {
+        l_l = nullptr;
+        l_r = nullptr;
+        u_l = nullptr;
+        u_r = nullptr;
+
     }
 
     std::vector<std::shared_ptr<Cell<T>>> getChildren() const

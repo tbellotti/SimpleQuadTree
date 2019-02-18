@@ -8,7 +8,7 @@
 #include <functional>
 #include "cell.h"
 #include "lipschitzfunction.h"
-
+#include "refinementcriterion.h"
 
 template <typename T>
 class QuadTree
@@ -23,22 +23,31 @@ protected:
     std::shared_ptr<Cell<T>> parent_cell; 
 
 
+    unsigned int getLevel(std::shared_ptr<Cell<T>> cell)    
+    {
+        return (unsigned)(log2(x_size / cell->getDx()));
+    }
+
+
 public:
     QuadTree(T xsize, T ysize, unsigned int minl, unsigned int maxl) : 
             x_size(xsize), y_size(ysize), min_level(minl), max_level(maxl), 
             parent_cell(new Cell<T>(Point<T>(0.0, 0.0), xsize, ysize)) {}
 
 
-    void buildUniform() {
+    void buildUniform() 
+    {
         splitHelp(parent_cell, min_level);
     }
 
+    void clear()
+    {
+        parent_cell = std::make_shared<Cell<T>>(Cell<T>(Point<T>(0.0, 0.0), x_size, y_size));
+    }
 
-    // Obsolete
     void refineWithCriterion(std::function<bool(Point<T>)> criterion)   
     {
-        std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
-        refineWithCriterionHelp(criterion, parent_cell, max_level - min_level);
+        refineWithCriterionHelp(criterion, parent_cell, max_level);
     }
 
     /*
@@ -52,7 +61,27 @@ public:
     void refineWithLevelSet(const LipschitzFunction<T> & level_set)
     {
         std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
-        refineWithLevelSetHelp(level_set, parent_cell, max_level);
+        refineWithLevelSetHelp(parent_cell, level_set, max_level);
+    }
+
+    void updateQuadTree(const RefinementCriterion<T> & criterion)
+    {
+
+        // Recursive delete until ok
+        //int i = 0;
+        bool updated = true;
+
+        while (updated) { // && i < 20000) {
+            updated = updateQuadTreeHelp(parent_cell, criterion, min_level, max_level);
+            // i++;
+        }
+
+        // Refinement (to add)
+    }
+
+    void stupidTest(T a)
+    {
+        stupidTestHelp(parent_cell, a);
     }
 
 
@@ -156,7 +185,6 @@ void refineWithCriterionHelp(std::function<bool(Point<T>)> criterion, std::share
 
     }   
     if(i_splitted || !cell->isLeaf())    {
-        // It has to be factorized using callable objects
         std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
 
         refineWithCriterionHelp(criterion, children_vector[0], level_to_go - 1);
@@ -165,6 +193,7 @@ void refineWithCriterionHelp(std::function<bool(Point<T>)> criterion, std::share
         refineWithCriterionHelp(criterion, children_vector[3], level_to_go - 1);
     } 
 }
+
 /*
 template <typename T>
 void refineWithLevelSetHelp(std::function<T(Point<T>)> level_set, std::shared_ptr<Cell<T>> cell, unsigned int level_to_go)   
@@ -190,11 +219,10 @@ void refineWithLevelSetHelp(std::function<T(Point<T>)> level_set, std::shared_pt
 }
 */
 template <typename T>
-void refineWithLevelSetHelp(const LipschitzFunction<T> & level_set, std::shared_ptr<Cell<T>> cell, unsigned int level_to_go)   
+void refineWithLevelSetHelp(std::shared_ptr<Cell<T>> cell, const LipschitzFunction<T> & level_set, unsigned int level_to_go)   
 {   
     bool i_splitted = false;
-    if (level_to_go > 0){
-    if (cell->isLeaf())  {
+    if (cell->isLeaf() && level_to_go > 0)  {
         if (std::abs(level_set(cell->getCenter())) <= level_set.getLipschitzConstant() * cell->getDiagonal())   {
             cell->splitCell();
             i_splitted = true;
@@ -203,15 +231,43 @@ void refineWithLevelSetHelp(const LipschitzFunction<T> & level_set, std::shared_
 
     }   
     if(i_splitted || !cell->isLeaf())    {
+
         std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
 
-        refineWithLevelSetHelp(level_set, children_vector[0], level_to_go - 1);
-        refineWithLevelSetHelp(level_set, children_vector[1], level_to_go - 1);
-        refineWithLevelSetHelp(level_set, children_vector[2], level_to_go - 1);
-        refineWithLevelSetHelp(level_set, children_vector[3], level_to_go - 1);
+        refineWithLevelSetHelp(children_vector[0], level_set, level_to_go - 1);
+        refineWithLevelSetHelp(children_vector[1], level_set, level_to_go - 1);
+        refineWithLevelSetHelp(children_vector[2], level_set, level_to_go - 1);
+        refineWithLevelSetHelp(children_vector[3], level_set, level_to_go - 1);
     } 
-    }
 }
+
+template <typename T>
+bool updateQuadTreeHelp(std::shared_ptr<Cell<T>> cell, const RefinementCriterion<T> & criterion, unsigned int min_lev, unsigned int max_lev)
+{
+
+    std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+    if (!cell->isLeaf())    {
+        if (children_vector[0]->isLeaf() && children_vector[1]->isLeaf() 
+            && children_vector[2]->isLeaf() && children_vector[3]->isLeaf()
+            && !criterion(cell->getCenter()))   {
+
+            cell->mergeCell();
+            return true;
+        }
+        else    {
+            return updateQuadTreeHelp(children_vector[0], criterion, min_lev, max_lev) ||
+                   updateQuadTreeHelp(children_vector[1], criterion, min_lev, max_lev) ||
+                   updateQuadTreeHelp(children_vector[2], criterion, min_lev, max_lev) ||
+                   updateQuadTreeHelp(children_vector[3], criterion, min_lev, max_lev);
+        }
+    }
+    else    {
+        return false;
+    }
+
+}
+
    
 template <typename T>
 void exportMeshTikzHelp(std::shared_ptr<Cell<T>> cell, std::ofstream & output_f, double scale_factor)
@@ -229,15 +285,49 @@ void exportMeshTikzHelp(std::shared_ptr<Cell<T>> cell, std::ofstream & output_f,
 
     }
     else    {
+        
+        
+        
         std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
 
         exportMeshTikzHelp(children_vector[0], output_f, scale_factor);
         exportMeshTikzHelp(children_vector[1], output_f, scale_factor);
         exportMeshTikzHelp(children_vector[2], output_f, scale_factor);
         exportMeshTikzHelp(children_vector[3], output_f, scale_factor);
+        
+        
+        /*
+        recursiveFunctionCallOnChildren(cell, [] (std::shared_ptr<Cell<T>> cl, std::ofstream & o_f, double s_f)
+            { exportMeshTikzHelp(cl, o_f, s_f); }, output_f, scale_factor);
+        */
     }
 
 }
+
+template<typename T>
+void stupidTestHelp(std::shared_ptr<Cell<T>> cell, T value)
+{
+    if (!cell->isLeaf())    {
+        recursiveFunctionCallOnChildren(cell, [] (std::shared_ptr<Cell<T>> cl, T vl) { stupidTestHelp(cl, vl); }, value);
+    }
+}
+
+
+/* Im trying to get advantage of VARIADIC TEMPLATES
+https://en.cppreference.com/w/cpp/language/parameter_pack
+
+*/
+template<typename T, typename F, typename... Fargs>
+void recursiveFunctionCallOnChildren(std::shared_ptr<Cell<T>> cell, F function, Fargs... arguments)
+{
+    std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+    function(children_vector[0], arguments...);
+    function(children_vector[1], arguments...);
+    function(children_vector[2], arguments...);
+    function(children_vector[3], arguments...);
+
+}
+
 
 
 #endif

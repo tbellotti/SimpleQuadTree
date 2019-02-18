@@ -24,12 +24,24 @@ public:
 };
 
 template <typename T>
+class TestCriterion : public RefinementCriterion<T>
+{
+public:
+    TestCriterion() : RefinementCriterion<T>()  {}
+
+    bool operator()(Point<T> arg) const override
+    {
+        return ((arg.getY() - arg.getX()) > 0.0);
+    }
+};
+
+template <typename T>
 struct BooleanCriterion
 {
 
     bool operator()(Point<T> arg) const 
     {
-        return (arg.getX() > 0.5);
+        return ((arg.getY() - arg.getX()) > 0.0);
     }
 };
 
@@ -54,10 +66,16 @@ int main ()
         return std::min(tmp1.abs() - 0.05, tmp2.abs() - 0.1); } );
 
     */
-   my_tree.refineWithLevelSet(my_level_set);
+    my_tree.refineWithLevelSet(my_level_set);
+    my_tree.exportMeshTikz(std::string("draw1.tex"));
 
-    my_tree.exportMeshTikz(std::string("draw.tex"));
+    TestCriterion<double> my_criterion;
+    //QuadTree<double> my_tree2(1.0, 1.0, 5, 7);
+    //my_tree2.buildUniform();
+    my_tree.updateQuadTree(my_criterion);
+    my_tree.exportMeshTikz(std::string("draw2.tex"));
 
+    //my_tree.stupidTest(5.2);
 
     //my_tree.exportCentersTikz(std::string("draw.tex"));
 
