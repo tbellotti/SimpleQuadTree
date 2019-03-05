@@ -12,13 +12,8 @@ class Cell
 protected:
     Point<T> base_point;
 
-    // Should be changed storing the level because it consumes less memory
-    // and the dx can be retrived by knowing the whole tree.
     T dx;
     T dy;
-    //bool is_leaf;
-    // I could eliminate this boolean and check
-    // for every child to be a null pointer.
 
     std::shared_ptr<Cell> l_l;
     std::shared_ptr<Cell> l_r;
@@ -104,6 +99,12 @@ public:
         to_return.push_back(base_point + Point<T>(0.0, dy));
 
         return to_return;
+    }
+
+
+    T cellSurface() const
+    {
+        return dx * dy;
     }
 
 

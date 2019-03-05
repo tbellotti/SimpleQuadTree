@@ -6,20 +6,25 @@
 #include <fstream>
 #include <cmath>
 #include <functional>
+#include <stdexcept>
 #include "cell.h"
 #include "lipschitzfunction.h"
 #include "refinementcriterion.h"
+
 
 template <typename T>
 class QuadTree
 {
 protected:
 
-    T x_size;
-    T y_size;
+    const T x_size;
+    const T y_size;
 
-    unsigned int min_level;
-    unsigned int max_level;
+
+    // Are we sure that we do not need to change them...it depends
+    const unsigned int min_level;
+    const unsigned int max_level;
+
     std::shared_ptr<Cell<T>> parent_cell; 
 
 
@@ -29,15 +34,157 @@ protected:
     }
 
 
+    bool updateQuadTreeDelete(std::shared_ptr<Cell<T>> cell, const RefinementCriterion<T> & criterion)
+    {
+
+        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+        if (!cell->isLeaf())    {
+            if (getLevel(cell) >= min_level
+                && children_vector[0]->isLeaf() && children_vector[1]->isLeaf() 
+                && children_vector[2]->isLeaf() && children_vector[3]->isLeaf()
+                && !criterion(cell))   {
+
+                cell->mergeCell();
+                return true;
+            }
+            else    {
+                return updateQuadTreeDelete(children_vector[0], criterion) ||
+                   updateQuadTreeDelete(children_vector[1], criterion) ||
+                   updateQuadTreeDelete(children_vector[2], criterion) ||
+                   updateQuadTreeDelete(children_vector[3], criterion);
+            }
+        }
+        else    {
+            return false;
+        }
+    }
+
+    void updateQuadTreeCreate(std::shared_ptr<Cell<T>> cell, const RefinementCriterion<T> & criterion)   
+    {   
+        bool i_splitted = false;
+        if (cell->isLeaf() && getLevel(cell) < max_level)  {
+            if (criterion(cell))   {
+                cell->splitCell();
+                i_splitted = true;
+            }
+
+        }   
+        if(i_splitted || !cell->isLeaf())    {
+
+            std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+            updateQuadTreeCreate(children_vector[0], criterion);
+            updateQuadTreeCreate(children_vector[1], criterion);
+            updateQuadTreeCreate(children_vector[2], criterion);
+            updateQuadTreeCreate(children_vector[3], criterion);
+        } 
+    }
+/*
+ bool refineWithLevelSetDelete(std::shared_ptr<Cell<T>> cell, const LipschitzFunction<T> & level_set)
+    {
+
+        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+        if (!cell->isLeaf())    {
+            if (getLevel(cell) >= min_level
+                && children_vector[0]->isLeaf() && children_vector[1]->isLeaf() 
+                && children_vector[2]->isLeaf() && children_vector[3]->isLeaf()
+                && (std::abs(level_set(cell->getCenter())) > level_set.getLipschitzConstant() * cell->getDiagonal()))   {
+
+                cell->mergeCell();
+                return true;
+            }
+            else    {
+                return refineWithLevelSetDelete(children_vector[0], level_set) ||
+                   refineWithLevelSetDelete(children_vector[1], level_set) ||
+                   refineWithLevelSetDelete(children_vector[2], level_set) ||
+                   refineWithLevelSetDelete(children_vector[3], level_set);
+            }
+        }
+        else    {
+            return false;
+        }
+    }
+
+    void refineWithLevelSetCreate(std::shared_ptr<Cell<T>> cell, const LipschitzFunction<T> & level_set)   
+    {   
+        bool i_splitted = false;
+        if (cell->isLeaf() && getLevel(cell) < max_level)  {
+            if (std::abs(level_set(cell->getCenter())) <= level_set.getLipschitzConstant() * cell->getDiagonal())   {
+                cell->splitCell();
+                i_splitted = true;
+            }
+
+        }   
+        if(i_splitted || !cell->isLeaf())    {
+
+            std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+            refineWithLevelSetCreate(children_vector[0], level_set);
+            refineWithLevelSetCreate(children_vector[1], level_set);
+            refineWithLevelSetCreate(children_vector[2], level_set);
+            refineWithLevelSetCreate(children_vector[3], level_set);
+        } 
+    }
+*/
+
 public:
     QuadTree(T xsize, T ysize, unsigned int minl, unsigned int maxl) : 
             x_size(xsize), y_size(ysize), min_level(minl), max_level(maxl), 
             parent_cell(new Cell<T>(Point<T>(0.0, 0.0), xsize, ysize)) {}
 
 
+
+    // Simple sequential integration taking a function 
+    // as being constant on each cell with the value at the cell
+    // center
+    T simpleIntegration(std::function<T(Point<T>)> & f) const
+    {
+        T integral = 0.0;
+        std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
+
+        for (auto leaf : leaves)    {
+            integral += f(leaf->getCenter()) * leaf->cellSurface();
+        }
+
+        return integral;
+    }
+
+    unsigned int getMinLevel() const
+    {
+        return min_level;
+    }
+
+    unsigned int getMaxLevel() const
+    {
+        return max_level;
+    }
+
+
+    unsigned int numberOfLeaves() const
+    {
+        return numberOfLeavesHelp(parent_cell);
+    }
+
+
     void buildUniform() 
     {
+        clear();  // In this way, we do not have to assume to start from an empty grid
         splitHelp(parent_cell, min_level);
+    }
+
+    // I cannot resume the previous function and this in the second
+    // with a default argument because min_level is not static.
+    void buildUniform(unsigned int lev)
+    {
+        if (lev >= min_level && lev <= max_level)   {
+            clear();
+            splitHelp(parent_cell, lev);
+        }
+        else    {
+            throw std::invalid_argument("[buildUniform] - Trying to build a uniform mesh outside the range [min_level, max_level].");
+        }
     }
 
     void clear()
@@ -45,38 +192,54 @@ public:
         parent_cell = std::make_shared<Cell<T>>(Cell<T>(Point<T>(0.0, 0.0), x_size, y_size));
     }
 
-    void refineWithCriterion(std::function<bool(Point<T>)> criterion)   
-    {
-        refineWithCriterionHelp(criterion, parent_cell, max_level);
-    }
 
-    /*
-    void refineWithLevelSet(std::function<T(Point<T>)> level_set)
-    {
-
-        std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
-        refineWithLevelSetHelp(level_set, parent_cell, max_level - min_level);
-    }
-    */
+    // Very very old version which works but ...
     void refineWithLevelSet(const LipschitzFunction<T> & level_set)
     {
         std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
         refineWithLevelSetHelp(parent_cell, level_set, max_level);
     }
+/*
+    void refineWithLevelSetNew(const LipschitzFunction<T> & level_set)
+    {
+        
+        // Refinement 
+        refineWithLevelSetCreate(parent_cell, level_set);
+
+        bool updated = true;
+
+        while (updated) { 
+            updated = refineWithLevelSetDelete(parent_cell, level_set);
+            // i++;
+        }
+    }*/
+
+
+    // The problem is with the pointer... i dont like it.
+    void refineWithLevelSetNew(LipschitzFunction<T> * level_set)
+    {
+        
+        LevelSetCriterion<T> level_set_criterion(level_set); 
+        //level_set_criterion.setLevelSet(level_set);
+        updateQuadTree(level_set_criterion);
+
+    }
+
 
     void updateQuadTree(const RefinementCriterion<T> & criterion)
     {
+        // Refinement 
+        updateQuadTreeCreate(parent_cell, criterion);
 
-        // Recursive delete until ok
-        //int i = 0;
         bool updated = true;
 
         while (updated) { // && i < 20000) {
-            updated = updateQuadTreeHelp(parent_cell, criterion, min_level, max_level);
+            // Deleting unuseful cells.
+            updated = updateQuadTreeDelete(parent_cell, criterion);
             // i++;
         }
 
-        // Refinement (to add)
+        
     }
 
     void stupidTest(T a)
@@ -87,11 +250,29 @@ public:
 
     std::vector<Point<T>> getCenters() const
     {
-        std::vector<Point<T>> to_return;
+        /*std::vector<Point<T>> to_return;
         getCentersHelp(parent_cell, to_return);
 
         return to_return;
+        */
+        std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
 
+        std::vector<Point<T>> to_return;
+
+        for (auto leave : leaves)   {
+            to_return.push_back(leave.getCenter());
+        }
+
+        return to_return;
+
+    }
+
+    std::vector<std::shared_ptr<Cell<T>>> getLeaves() const
+    {
+        std::vector<std::shared_ptr<Cell<T>>> to_return;
+        getLeavesHelp(parent_cell, to_return);
+
+        return to_return;
     }
 
     void exportCentersTikz(std::string filename) const
@@ -155,6 +336,7 @@ void splitHelp(std::shared_ptr<Cell<T>> cell, unsigned int level_to_go) {
     }
 }
 
+/*
 template <typename T>
 void getCentersHelp(std::shared_ptr<Cell<T>> cell, std::vector<Point<T>> & to_fill) {
 
@@ -171,53 +353,26 @@ void getCentersHelp(std::shared_ptr<Cell<T>> cell, std::vector<Point<T>> & to_fi
     }
 
 }
-
-template <typename T>
-void refineWithCriterionHelp(std::function<bool(Point<T>)> criterion, std::shared_ptr<Cell<T>> cell, unsigned int level_to_go)   
-{   
-    bool i_splitted = false;
-    if (cell->isLeaf() && level_to_go > 0)  {
-        if (criterion(cell->getCenter()))   {
-            cell->splitCell();
-            i_splitted = true;
-            std::cout<<"Cell split"<<std::endl;
-        }
-
-    }   
-    if(i_splitted || !cell->isLeaf())    {
-        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-        refineWithCriterionHelp(criterion, children_vector[0], level_to_go - 1);
-        refineWithCriterionHelp(criterion, children_vector[1], level_to_go - 1);
-        refineWithCriterionHelp(criterion, children_vector[2], level_to_go - 1);
-        refineWithCriterionHelp(criterion, children_vector[3], level_to_go - 1);
-    } 
-}
-
-/*
-template <typename T>
-void refineWithLevelSetHelp(std::function<T(Point<T>)> level_set, std::shared_ptr<Cell<T>> cell, unsigned int level_to_go)   
-{   
-    bool i_splitted = false;
-    if (cell->isLeaf() && level_to_go > 0)  {
-        if (std::abs(level_set(cell->getCenter())) <= 1.0*cell->getDiagonal())   {
-            cell->splitCell();
-            i_splitted = true;
-            std::cout<<"Cell split"<<std::endl;
-        }
-
-    }   
-    if(i_splitted || !cell->isLeaf())    {
-        // It has to be factorized using callable objects
-        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-        refineWithLevelSetHelp(level_set, children_vector[0], level_to_go - 1);
-        refineWithLevelSetHelp(level_set, children_vector[1], level_to_go - 1);
-        refineWithLevelSetHelp(level_set, children_vector[2], level_to_go - 1);
-        refineWithLevelSetHelp(level_set, children_vector[3], level_to_go - 1);
-    } 
-}
 */
+
+template <typename T>
+void getLeavesHelp(std::shared_ptr<Cell<T>> cell, std::vector<std::shared_ptr<Cell<T>>> & to_fill) {
+
+    if (cell->isLeaf()) {
+        to_fill.push_back(cell);
+    }
+    else    {
+        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+        getLeavesHelp(children_vector[0], to_fill);
+        getLeavesHelp(children_vector[1], to_fill);
+        getLeavesHelp(children_vector[2], to_fill);
+        getLeavesHelp(children_vector[3], to_fill);
+    }
+
+}
+
+
 template <typename T>
 void refineWithLevelSetHelp(std::shared_ptr<Cell<T>> cell, const LipschitzFunction<T> & level_set, unsigned int level_to_go)   
 {   
@@ -241,32 +396,6 @@ void refineWithLevelSetHelp(std::shared_ptr<Cell<T>> cell, const LipschitzFuncti
     } 
 }
 
-template <typename T>
-bool updateQuadTreeHelp(std::shared_ptr<Cell<T>> cell, const RefinementCriterion<T> & criterion, unsigned int min_lev, unsigned int max_lev)
-{
-
-    std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-    if (!cell->isLeaf())    {
-        if (children_vector[0]->isLeaf() && children_vector[1]->isLeaf() 
-            && children_vector[2]->isLeaf() && children_vector[3]->isLeaf()
-            && !criterion(cell->getCenter()))   {
-
-            cell->mergeCell();
-            return true;
-        }
-        else    {
-            return updateQuadTreeHelp(children_vector[0], criterion, min_lev, max_lev) ||
-                   updateQuadTreeHelp(children_vector[1], criterion, min_lev, max_lev) ||
-                   updateQuadTreeHelp(children_vector[2], criterion, min_lev, max_lev) ||
-                   updateQuadTreeHelp(children_vector[3], criterion, min_lev, max_lev);
-        }
-    }
-    else    {
-        return false;
-    }
-
-}
 
    
 template <typename T>
@@ -310,6 +439,24 @@ void stupidTestHelp(std::shared_ptr<Cell<T>> cell, T value)
     if (!cell->isLeaf())    {
         recursiveFunctionCallOnChildren(cell, [] (std::shared_ptr<Cell<T>> cl, T vl) { stupidTestHelp(cl, vl); }, value);
     }
+}
+
+template<typename T>
+unsigned int numberOfLeavesHelp(const std::shared_ptr<Cell<T>> & cell)
+{
+    if (cell->isLeaf())
+        return 1;
+    else
+    {
+        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+        return numberOfLeavesHelp(children_vector[0])
+             + numberOfLeavesHelp(children_vector[1])
+             + numberOfLeavesHelp(children_vector[2])
+             + numberOfLeavesHelp(children_vector[3]);
+   
+    }
+    
 }
 
 
