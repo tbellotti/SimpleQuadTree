@@ -7,19 +7,21 @@
 #include <sstream>
 
 /*
-This is a two dimensional point
+This class implements the notion of 
+two dimensional point based on the generic 
+type T.
 */
 
 template <typename T>
 class Point
 {
 protected:
-    T x_coord;
-    T y_coord;
+    T x_coord = 0.0;
+    T y_coord = 0.0;
 
 public:
     // Constructors and destructor
-    Point() = default;
+    Point() = default; 
     Point(T x, T y) : x_coord(x), y_coord(y) {}
     explicit Point(T x) : x_coord(x), y_coord(x) {}
     Point(const Point & pt) : x_coord(pt.x_coord), y_coord(pt.y_coord) {}
@@ -33,10 +35,10 @@ public:
         return *this;
     }
 
-
     // Getters
     inline T getX() const { return x_coord; }
     inline T getY() const { return y_coord; }
+
     // Setters 
     inline void setX(T x) { x_coord = x; }
     inline void setY(T y) { y_coord = y; }
@@ -51,19 +53,23 @@ public:
 
     T abs() const
     {
-        Point<T> origin = Point<T>(0.0, 0.0);
-        return distance(origin);
+        //Point<T> origin = Point<T>(0.0, 0.0);
+        return distance(Point<T>(0.0, 0.0));
     }
 
-    T distance(Point & rhs) const 
+    T distance(const Point & rhs) const 
     {
         return sqrt(pow(x_coord - rhs.x_coord, 2.0) + pow(y_coord - rhs.y_coord, 2.0));
     }
 
 };
 
+// Userful operator overloading which we do 
+// not define as members of the class.
+
+// Multiplication by a scalar (cannot be class member)
 template <typename T>
-Point<T> operator* (T lhs, Point<T> rhs)
+Point<T> operator* (const T & lhs, const Point<T> & rhs)
 {
     return Point<T>(lhs*rhs.getX(), lhs*rhs.getY());
 }

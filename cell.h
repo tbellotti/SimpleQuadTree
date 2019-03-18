@@ -4,33 +4,50 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <stdexcept>
 #include "point.h"
+
+/*
+This class implements the notion of 
+rectangular cell of a QuadTree based on the generic 
+type T.
+*/
+
 
 template <typename T>
 class Cell
 {
 protected:
-    Point<T> base_point;
+    const Point<T> base_point;
 
-    T dx;
-    T dy;
+    const T dx;
+    const T dy;
 
-    std::shared_ptr<Cell> l_l;
-    std::shared_ptr<Cell> l_r;
-    std::shared_ptr<Cell> u_l;
-    std::shared_ptr<Cell> u_r;
+    // They are not const because we need to modify them
+    // for example when erasing a children cell.
+    std::shared_ptr<Cell> l_l; // Lower-Left children
+    std::shared_ptr<Cell> l_r; // Lower-Right children
+    std::shared_ptr<Cell> u_l; // Upper-Left children
+    std::shared_ptr<Cell> u_r; // Upper-Right children
+    /*
+     -----------
+    | U_L | U_R |
+    |     |     |
+    |-----|-----|
+    | L_L | L_R |
+    |     |     |
+     -----------
+    */
 
 public:
     // Constructors and destructor
-    Cell(Point<T> b_p, T new_dx, T new_dy) : base_point(b_p), dx(new_dx), dy(new_dy) {} //, is_leaf(true) {}
+    Cell(Point<T> b_p, T new_dx, T new_dy) : base_point(b_p), dx(new_dx), dy(new_dy) {} 
     ~Cell() = default;
     
-    //bool isLeaf() const { return is_leaf; }
     bool isLeaf() const
     {
         return (!l_l && !l_r && !u_l && !u_r);
     }
-
 
     Point<T> getCenter() const 
     {
@@ -64,7 +81,6 @@ public:
         l_r = nullptr;
         u_l = nullptr;
         u_r = nullptr;
-
     }
 
     std::vector<std::shared_ptr<Cell<T>>> getChildren() const
@@ -110,7 +126,5 @@ public:
 
 };
 
-
 #endif
-
 

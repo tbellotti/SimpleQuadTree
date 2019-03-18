@@ -1,0 +1,16 @@
+1. Check const and stuff like that for all the classes
+- point.h [DONE]
+- cell.h [DONE]
+- other ... to do
+
+2. Think at the way of deal with callable objects and their inheritance
+
+3. Try to factorize the recursive visit
+
+4. Check the parallel algorithm and find a machine to test it properly
+
+5. Write a main file to test almost every feature of the code.
+- point.h [DONE]
+
+6. Produce a scheme of the classes and their relationships
+

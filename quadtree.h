@@ -11,6 +11,12 @@
 #include "lipschitzfunction.h"
 #include "refinementcriterion.h"
 
+/*
+This class implements the notion of 
+QuadTree mesh based on the generic 
+type T.
+*/
+
 
 template <typename T>
 class QuadTree
@@ -20,8 +26,8 @@ protected:
     const T x_size;
     const T y_size;
 
-
-    // Are we sure that we do not need to change them...it depends
+    // We consider the minimum and the maximum level of the
+    // QuadTree as immutable (one can change this)
     const unsigned int min_level;
     const unsigned int max_level;
 
@@ -298,9 +304,9 @@ public:
 
     }
 
-    void exportMeshTikz(std::string filename) const
+    void exportMeshTikz(std::string filename, const T scale_factor) const
     {
-        double scale_factor = 8.0;
+        //double scale_factor = 8.0;
 
         std::ofstream output_f;
         output_f.open (filename);
