@@ -21,10 +21,14 @@ template <typename T>
 class LevelSetCriterion : public RefinementCriterion<T>
 {
 protected:
-    LipschitzFunction<T> * level_set;
+    // !!!!! Think about the fact that we can like to
+    // change the level-set without
+    // having to declare a new class for the criterion
+    // I guess it will have to be changed
+    const LipschitzFunction<T> * level_set;
 
 public:
-    LevelSetCriterion(LipschitzFunction<T> * ls) : RefinementCriterion<T>(), level_set(ls) {}
+    LevelSetCriterion(const LipschitzFunction<T> * ls) : RefinementCriterion<T>(), level_set(ls) {}
     ~LevelSetCriterion() = default;
     /*
     void setLevelSet(const LipschitzFunction<T> & func)

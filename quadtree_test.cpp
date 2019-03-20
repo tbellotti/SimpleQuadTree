@@ -73,7 +73,7 @@ int main ()
     TestCriterion<double> my_criterion;
 
     //my_tree.updateQuadTree(my_criterion);
-    my_tree.refineWithLevelSetNew(&my_level_set);
+    my_tree.refineWithLevelSetNew(my_level_set);
     //my_tree.updateQuadTree(my_criterion);
 
     my_tree.exportMeshTikz(std::string("draw1.tex"), 10.0);

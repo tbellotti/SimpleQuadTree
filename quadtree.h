@@ -222,10 +222,11 @@ public:
 
 
     // The problem is with the pointer... i dont like it.
-    void refineWithLevelSetNew(LipschitzFunction<T> * level_set)
+    void refineWithLevelSetNew(const LipschitzFunction<T> & level_set)
     {
-        
-        LevelSetCriterion<T> level_set_criterion(level_set); 
+        // !!! THink about passing a constant argument !!!
+        const LipschitzFunction<T> * tmp_lv = &level_set;
+        LevelSetCriterion<T> level_set_criterion(tmp_lv); 
         //level_set_criterion.setLevelSet(level_set);
         updateQuadTree(level_set_criterion);
 
