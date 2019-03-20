@@ -17,7 +17,6 @@ public:
 
 
 
-
 template <typename T>
 class LevelSetCriterion : public RefinementCriterion<T>
 {
@@ -26,6 +25,7 @@ protected:
 
 public:
     LevelSetCriterion(LipschitzFunction<T> * ls) : RefinementCriterion<T>(), level_set(ls) {}
+    ~LevelSetCriterion() = default;
     /*
     void setLevelSet(const LipschitzFunction<T> & func)
     {

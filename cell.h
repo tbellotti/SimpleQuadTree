@@ -18,6 +18,8 @@ template <typename T>
 class Cell
 {
 protected:
+    // The const is the reason why we do not have setters
+    // it avoids problems when creating the whole tree.
     const Point<T> base_point;
 
     const T dx;
@@ -125,6 +127,14 @@ public:
 
 
 };
+
+// Mainly for debugging purposes
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Cell<T> & cl)
+{
+    os<<"Center: "<<cl.getCenter()<<", dx = "<<cl.getDx()<<", dy = "<<cl.getDy();
+    return os;
+}
 
 #endif
 

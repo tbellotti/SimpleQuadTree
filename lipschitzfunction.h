@@ -15,7 +15,8 @@ public:
     LipschitzFunction(T lipschitz) : lip_const(lipschitz) {}
     virtual T operator()(Point<T> arg) const = 0;
 
-    T getLipschitzConstant() const { return lip_const; } 
+    T getLipschitzConstant() const { return lip_const; }
+    void setLipschitzConstant(T new_c) { lip_const = new_c; }
 
 };
 
