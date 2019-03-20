@@ -8,7 +8,10 @@
 2. Think at the way of deal with callable objects and their inheritance (look at the main in order to 
 understand what we want to obtain and try to define as less classes as possible).
 
-3. Try to factorize the recursive visit
+I have started to do this but it should be done in a more proper way and thinking about
+the question of having const pointer and references and stuff like that.
+
+3. Try to factorize the recursive visit and CLEAN the quadtree.h class!
 
 4. Check the parallel algorithm and find a machine to test it properly
 

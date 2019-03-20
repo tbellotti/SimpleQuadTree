@@ -77,6 +77,9 @@ int main ()
     //my_tree.updateQuadTree(my_criterion);
 
     my_tree.exportMeshTikz(std::string("draw1.tex"), 10.0);
+    my_tree.exportCentersTikz(std::string("draw2.tex"), 10.0);
+
+
 
     std::function<double(Point<double>)> to_integrate = [](Point<double> pt) { 
         return pow(pt.getX(), 2.0) + 2.0*pow(pt.getY(), 2.0) + pt.getX()*pt.getY();

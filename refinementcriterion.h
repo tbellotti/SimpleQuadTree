@@ -25,6 +25,10 @@ protected:
     // change the level-set without
     // having to declare a new class for the criterion
     // I guess it will have to be changed
+
+    // Indeed no because this criterion is only used by
+    // the tree which does not have the right and the necessity
+    // to modify the level-set function.
     const LipschitzFunction<T> * level_set;
 
 public:

@@ -225,6 +225,9 @@ public:
     void refineWithLevelSetNew(const LipschitzFunction<T> & level_set)
     {
         // !!! THink about passing a constant argument !!!
+        // It seems the good idea because the tree does not have
+        // the necessity and the right to modify the level set
+        // function autonomously
         const LipschitzFunction<T> * tmp_lv = &level_set;
         LevelSetCriterion<T> level_set_criterion(tmp_lv); 
         //level_set_criterion.setLevelSet(level_set);
@@ -267,7 +270,7 @@ public:
         std::vector<Point<T>> to_return;
 
         for (auto leave : leaves)   {
-            to_return.push_back(leave.getCenter());
+            to_return.push_back(leave->getCenter());
         }
 
         return to_return;
@@ -282,9 +285,8 @@ public:
         return to_return;
     }
 
-    void exportCentersTikz(std::string filename) const
+    void exportCentersTikz(const std::string & filename, const T scale_factor) const
     {
-        double scale_factor = 8.0;
         std::vector<Point<T>> centers = getCenters();
 
         std::ofstream output_f;
@@ -305,7 +307,7 @@ public:
 
     }
 
-    void exportMeshTikz(std::string filename, const T scale_factor) const
+    void exportMeshTikz(const std::string & filename, const T scale_factor) const
     {
         //double scale_factor = 8.0;
 
@@ -325,6 +327,8 @@ public:
         output_f.close();
 
     }
+
+
 
 };
 
@@ -466,6 +470,7 @@ unsigned int numberOfLeavesHelp(const std::shared_ptr<Cell<T>> & cell)
     
 }
 
+// ANYWAY IT SEEMS OVERCOMPLICATED
 
 /* Im trying to get advantage of VARIADIC TEMPLATES
 https://en.cppreference.com/w/cpp/language/parameter_pack
