@@ -1,3 +1,7 @@
+Thing to remind to tell during the discussion:
+- The recursive way is for sure not the most efficient way to deal with large quadtree and to find neighbors etc, but it is for sure the most natural and easiest one to implement for a first implementation. Anyway one can think about changing the implementation without touching the interface... or almost.
+
+
 1. Check const and stuff like that for all the classes
 - point.h [DONE]
 - cell.h [DONE]
@@ -7,6 +11,7 @@
 
 2. Think at the way of deal with callable objects and their inheritance (look at the main in order to 
 understand what we want to obtain and try to define as less classes as possible).
+SEEMS OK
 
 I have started to do this but it should be done in a more proper way and thinking about
 the question of having const pointer and references and stuff like that.
@@ -22,3 +27,6 @@ the question of having const pointer and references and stuff like that.
 6. Produce a scheme of the classes and their relationships
 - point.h [DONE]
 - cell.h [DONE]
+
+
+7. Reorganize the project into FOLDER at the very end...

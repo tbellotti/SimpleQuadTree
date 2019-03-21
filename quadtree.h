@@ -33,7 +33,8 @@ protected:
 
     std::shared_ptr<Cell<T>> parent_cell; 
 
-
+    // The level makes sense only in relation to the quadtree the cell belongs
+    // to, hence it is a member.
     unsigned int getLevel(std::shared_ptr<Cell<T>> cell)    
     {
         return (unsigned)(log2(x_size / cell->getDx()));
@@ -86,61 +87,13 @@ protected:
             updateQuadTreeCreate(children_vector[3], criterion);
         } 
     }
-/*
- bool refineWithLevelSetDelete(std::shared_ptr<Cell<T>> cell, const LipschitzFunction<T> & level_set)
-    {
-
-        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-        if (!cell->isLeaf())    {
-            if (getLevel(cell) >= min_level
-                && children_vector[0]->isLeaf() && children_vector[1]->isLeaf() 
-                && children_vector[2]->isLeaf() && children_vector[3]->isLeaf()
-                && (std::abs(level_set(cell->getCenter())) > level_set.getLipschitzConstant() * cell->getDiagonal()))   {
-
-                cell->mergeCell();
-                return true;
-            }
-            else    {
-                return refineWithLevelSetDelete(children_vector[0], level_set) ||
-                   refineWithLevelSetDelete(children_vector[1], level_set) ||
-                   refineWithLevelSetDelete(children_vector[2], level_set) ||
-                   refineWithLevelSetDelete(children_vector[3], level_set);
-            }
-        }
-        else    {
-            return false;
-        }
-    }
-
-    void refineWithLevelSetCreate(std::shared_ptr<Cell<T>> cell, const LipschitzFunction<T> & level_set)   
-    {   
-        bool i_splitted = false;
-        if (cell->isLeaf() && getLevel(cell) < max_level)  {
-            if (std::abs(level_set(cell->getCenter())) <= level_set.getLipschitzConstant() * cell->getDiagonal())   {
-                cell->splitCell();
-                i_splitted = true;
-            }
-
-        }   
-        if(i_splitted || !cell->isLeaf())    {
-
-            std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-            refineWithLevelSetCreate(children_vector[0], level_set);
-            refineWithLevelSetCreate(children_vector[1], level_set);
-            refineWithLevelSetCreate(children_vector[2], level_set);
-            refineWithLevelSetCreate(children_vector[3], level_set);
-        } 
-    }
-*/
 
 public:
     QuadTree(T xsize, T ysize, unsigned int minl, unsigned int maxl) : 
             x_size(xsize), y_size(ysize), min_level(minl), max_level(maxl), 
             parent_cell(new Cell<T>(Point<T>(0.0, 0.0), xsize, ysize)) {}
 
-
+    ~QuadTree() = default;
 
     // Simple sequential integration taking a function 
     // as being constant on each cell with the value at the cell
@@ -199,30 +152,7 @@ public:
     }
 
 
-    // Very very old version which works but ...
     void refineWithLevelSet(const LipschitzFunction<T> & level_set)
-    {
-        std::cout<<"Level difference : "<<max_level - min_level<<std::endl;
-        refineWithLevelSetHelp(parent_cell, level_set, max_level);
-    }
-/*
-    void refineWithLevelSetNew(const LipschitzFunction<T> & level_set)
-    {
-        
-        // Refinement 
-        refineWithLevelSetCreate(parent_cell, level_set);
-
-        bool updated = true;
-
-        while (updated) { 
-            updated = refineWithLevelSetDelete(parent_cell, level_set);
-            // i++;
-        }
-    }*/
-
-
-    // The problem is with the pointer... i dont like it.
-    void refineWithLevelSetNew(const LipschitzFunction<T> & level_set)
     {
         // !!! THink about passing a constant argument !!!
         // It seems the good idea because the tree does not have
@@ -250,11 +180,6 @@ public:
         }
 
         
-    }
-
-    void stupidTest(T a)
-    {
-        stupidTestHelp(parent_cell, a);
     }
 
 
@@ -347,24 +272,6 @@ void splitHelp(std::shared_ptr<Cell<T>> cell, unsigned int level_to_go) {
     }
 }
 
-/*
-template <typename T>
-void getCentersHelp(std::shared_ptr<Cell<T>> cell, std::vector<Point<T>> & to_fill) {
-
-    if (cell->isLeaf()) {
-        to_fill.push_back(cell->getCenter());
-    }
-    else    {
-        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-        getCentersHelp(children_vector[0], to_fill);
-        getCentersHelp(children_vector[1], to_fill);
-        getCentersHelp(children_vector[2], to_fill);
-        getCentersHelp(children_vector[3], to_fill);
-    }
-
-}
-*/
 
 template <typename T>
 void getLeavesHelp(std::shared_ptr<Cell<T>> cell, std::vector<std::shared_ptr<Cell<T>>> & to_fill) {
@@ -469,25 +376,6 @@ unsigned int numberOfLeavesHelp(const std::shared_ptr<Cell<T>> & cell)
     }
     
 }
-
-// ANYWAY IT SEEMS OVERCOMPLICATED
-
-/* Im trying to get advantage of VARIADIC TEMPLATES
-https://en.cppreference.com/w/cpp/language/parameter_pack
-
-*/
-template<typename T, typename F, typename... Fargs>
-void recursiveFunctionCallOnChildren(std::shared_ptr<Cell<T>> cell, F function, Fargs... arguments)
-{
-    std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-    function(children_vector[0], arguments...);
-    function(children_vector[1], arguments...);
-    function(children_vector[2], arguments...);
-    function(children_vector[3], arguments...);
-
-}
-
-
 
 #endif
 
