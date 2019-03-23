@@ -7,6 +7,7 @@
 #include <cmath>
 #include <functional>
 #include <stdexcept>
+#include <algorithm>
 #include "cell.h"
 #include "lipschitzfunction.h"
 #include "refinementcriterion.h"
@@ -194,9 +195,13 @@ public:
 
         std::vector<Point<T>> to_return;
 
+        // Maybe we can do it with a std::for_each, but it finally
+        // does the same.
+
         for (auto leave : leaves)   {
             to_return.push_back(leave->getCenter());
         }
+
 
         return to_return;
 

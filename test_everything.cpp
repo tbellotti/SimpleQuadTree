@@ -1,6 +1,10 @@
 #include "point.h"
 #include "cell.h"
-
+#include "lipschitzfunction.h"
+#include "refinementcriterion.h"
+#include "quadtree.h"
+#include <string>
+#include <cmath>
 
 typedef double real;
 
@@ -90,6 +94,179 @@ int main () {
     cell1.mergeCell();
     std::cout<<"1 vs "<<cell1.isLeaf()<<std::endl;
 
+    // [3] Testing "lipschitzfunction.h"
+    std::cout<<std::endl<<"[3] Testing lipschitzfunction.h"<<std::endl;
 
+
+    class MyLip : public LipschitzFunction<real>
+    {
+    public:
+        MyLip() : LipschitzFunction<real>() {}
+        MyLip(real lipschitz) : LipschitzFunction<real>(lipschitz) {}
+        ~MyLip() = default;
+
+        real operator()(Point<real> arg) const override
+        {
+            return arg.getX()+arg.getY();
+        }
+    };
+
+    // Testing constructors
+    std::cout<<"(-) Testing constructors"<<std::endl;
+    MyLip fun1;
+    MyLip fun2(1.5);
+
+    // Testing setters
+    std::cout<<"(-) Testing setters"<<std::endl;
+    fun1.setLipschitzConstant(1.2);
+
+    // Testing getters
+    std::cout<<"(-) Testing getters"<<std::endl;
+    std::cout<<"1.2 vs "<<fun1.getLipschitzConstant()<<std::endl;
+    std::cout<<"1.5 vs "<<fun2.getLipschitzConstant()<<std::endl;
+
+    // Testing () operator
+    std::cout<<"(-) Testing operator ()"<<std::endl;
+    std::cout<<"8.0 vs "<<fun1(pt2)<<std::endl;
+    std::cout<<"8.0 vs "<<fun2(pt2)<<std::endl;
+
+
+    // [4] Testing "refinementcriterion.h"
+    std::cout<<std::endl<<"[4] Testing refinementcriterion.h"<<std::endl;
+
+    class MyCrit : public RefinementCriterion<real>
+    {
+    public:
+        MyCrit() : RefinementCriterion() {}
+        ~MyCrit() = default;
+
+    bool operator()(std::shared_ptr<Cell<real>> arg) const override
+    {
+        return (arg->getDiagonal() > 1.5 );
+    }
+
+    };
+
+    // Testing constructor
+    std::cout<<"(-) Testing constructor"<<std::endl;
+    MyCrit crit1;
+
+    // Testing operator()
+    std::cout<<"(-) Testing operator()"<<std::endl;
+    auto tmp_ptr = std::make_shared<Cell<real>>(cell1);
+    std::cout<<"1 vs "<<crit1(tmp_ptr)<<std::endl;
+    std::cout<<"0 vs "<<crit1(tmp_child[0])<<std::endl;
+
+
+
+    // [5] Testing "quadtree.h"
+    std::cout<<std::endl<<"[5] Testing quadtree.h"<<std::endl;
+
+    // Testing constructor
+    std::cout<<"(-) Testing constructor"<<std::endl;
+    QuadTree<real> my_tree1(10.0, 20.0, 1.0, 7.0);
+    QuadTree<real> my_tree2(10.0, 20.0, 4.0, 7.0);
+
+    // Testing builduniform()
+    std::cout<<"(-) Testing builduniform()"<<std::endl;
+    my_tree1.buildUniform(5);
+    my_tree2.buildUniform();
+
+
+
+    // Testing clear
+    std::cout<<"(-) Testing clear()"<<std::endl;
+    my_tree2.clear();
+    std::cout<<"1 vs "<<my_tree2.numberOfLeaves()<<std::endl;
+
+    my_tree2.buildUniform(); //  We come back
+
+
+    // Testing getters
+    std::cout<<"(-) Testing getters"<<std::endl;
+    std::cout<<"1 vs "<<my_tree1.getMinLevel()<<std::endl;
+    std::cout<<"7 vs "<<my_tree1.getMaxLevel()<<std::endl;
+    std::cout<<"4 vs "<<my_tree2.getMinLevel()<<std::endl;
+    std::cout<<"256 vs "<<my_tree1.numberOfLeaves()<<std::endl;
+    std::cout<<"1024 vs "<<my_tree2.numberOfLeaves()<<std::endl;
+
+    std::cout<<"We will print a lot of points..."<<std::endl;
+    std::vector<Point<real>> centers_1 = my_tree1.getCenters();
+    std::vector<std::shared_ptr<Cell<real>>> leaves_1 = my_tree1.getLeaves();
+
+    for (unsigned int i = 0; i < leaves_1.size(); i++)   {
+        std::cout<<centers_1[i]<<std::endl;
+        std::cout<<*leaves_1[i]<<std::endl;
+    }
+
+    // Testing refinement
+    std::cout<<"(-) Testing refinement routines"<<std::endl;
+
+    class SpaceBasedCriterion : public RefinementCriterion<real>
+    {
+    public:
+        SpaceBasedCriterion() : RefinementCriterion<real>()  {}
+        ~SpaceBasedCriterion() = default;
+
+        bool operator()(std::shared_ptr<Cell<real>> arg) const override
+    {
+        real x = arg->getCenter().getX();
+        real y = arg->getCenter().getY();
+
+        return (y >= 2.0/5.0*pow(x,2.0)-4.0*x+20.0 && y <= 2.0*pow(x,2.0)-20.0*x+62.0) ||
+            (y <= -40.0/3.0*x+20.0) || (x>=6.0 && y <= 3.0);
+
+    }
+    };
+
+    SpaceBasedCriterion crit3;
+
+    my_tree1.updateQuadTree(crit3);
+    my_tree1.exportMeshTikz(std::string("simple_refinement.tex"),1.0);
+
+    // Test with mandelbrot
+
+    class MandelbrotCriterion : public RefinementCriterion<real>
+    {
+    public:
+        MandelbrotCriterion() : RefinementCriterion<real>()  {}
+        ~MandelbrotCriterion() = default;
+
+        bool operator()(std::shared_ptr<Cell<real>> arg) const override
+    {
+        real x = arg->getCenter().getX()-1.0;
+        real y = arg->getCenter().getY()-2.0;
+
+
+
+        real max_abs = 1000.0;
+        real curr_abs = 0.0;
+
+        unsigned int it = 0;
+
+        Point<real> p_n (0.0, 0.0);
+        Point<real> c (x,y);
+
+        while (it < 50 && curr_abs < 2.0*max_abs)
+        {
+            Point<real> tmp = Point<real>(pow(p_n.getX(),2.0)-pow(p_n.getY(),2.0),2*p_n.getX()*p_n.getY()) + c;   
+            p_n = tmp;
+            curr_abs = p_n.abs();
+        }
+
+        return (curr_abs < max_abs);
+
+    }
+    };
+
+    QuadTree<real> my_tree_mandelbrot(3.0, 2.0, 1.0, 5.0);
+    my_tree_mandelbrot.buildUniform(4.0);
+    MandelbrotCriterion md_crit;
+
+
+    my_tree_mandelbrot.updateQuadTree(md_crit);
+    my_tree_mandelbrot.exportMeshTikz(std::string("mandelbrot_refinement.tex"),2.5);
+
+    return 0;
 }
 

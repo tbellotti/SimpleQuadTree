@@ -13,6 +13,8 @@ protected:
 public:
     LipschitzFunction() = default;
     LipschitzFunction(T lipschitz) : lip_const(lipschitz) {}
+    virtual ~LipschitzFunction() = default;
+
     virtual T operator()(Point<T> arg) const = 0;
 
     T getLipschitzConstant() const { return lip_const; }
