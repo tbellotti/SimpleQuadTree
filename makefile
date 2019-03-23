@@ -1,28 +1,44 @@
 CXXFLAGS += -std=c++11
 CXXFLAGS += -Wall
 CXXFLAGS += -lmpi
+CXXFLAGS += -lm
 
-EXE = quadtree_test
-#EXE = quadtree_test_film
+# Various folders in the project
+BINDIR = $(PWD)/bin
+BUILDDIR = $(PWD)/build
+HEADERDIR = $(PWD)/include
+SRCDIR = $(PWD)/src
+TESTDIR = $(PWD)/test
 
-OBJ = quadtree_test.o
-#OBJ = quadtree_test_film.o
-
-all : $(EXE)
 
 .PHONY : clean distclean
 
+HEADERS := $(HEADERDIR)/quadtree.h $(HEADERDIR)/cell.h $(HEADERDIR)/point.h $(HEADERDIR)/lipschitzfunction.h $(HEADERDIR)/refinementcriterion.h
 
-quadtree_test.o : quadtree.h cell.h point.h lipschitzfunction.h refinementcriterion.h
+#SRC = $(TESTDIR)/quadtree_test.cpp $(TESTDIR)/test_everything.cpp
 
-$(EXE) : $(OBJ)
-	$(CXX) $(OBJ) -o $(EXE)
+#OBJ = $(BUILDDIR)/quadtree_test.o $(BUILDDIR)/test_everything.o
+
+EXE = $(BINDIR)/quadtree_test $(BINDIR)/test_everything
 
 
+all : $(EXE)
+
+$(BUILDDIR)/quadtree_test.o : $(TESTDIR)/quadtree_test.cpp $(HEADERS)
+	$(CXX) $< -c $(CXXFLAGS) -o $@
+
+$(BUILDDIR)/test_everything.o : $(TESTDIR)/test_everything.cpp $(HEADERS)
+	$(CXX) $< -c $(CXXFLAGS) -o $@
+
+$(BINDIR)/quadtree_test : $(BUILDDIR)/quadtree_test.o 
+	$(CXX) $< $(CXXFLAGS) -o $@
+
+$(BINDIR)/test_everything : $(BUILDDIR)/test_everything.o
+	$(CXX) $< $(CXXFLAGS) -o $@
 
 
 clean : 
-	$(RM) -rf *.o
+	$(RM) -rf $(BUILDDIR)/*.o
 
 distclean : clean
 	$(RM) -rf $(EXE)

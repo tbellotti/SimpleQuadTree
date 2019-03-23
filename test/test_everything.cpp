@@ -1,8 +1,8 @@
-#include "point.h"
-#include "cell.h"
-#include "lipschitzfunction.h"
-#include "refinementcriterion.h"
-#include "quadtree.h"
+#include "../include/point.h"
+#include "../include/cell.h"
+#include "../include/lipschitzfunction.h"
+#include "../include/refinementcriterion.h"
+#include "../include/quadtree.h"
 #include <string>
 #include <cmath>
 
@@ -221,7 +221,7 @@ int main () {
 
     SpaceBasedCriterion crit3;
     my_tree1.updateQuadTree(crit3);
-    my_tree1.exportMeshTikz(std::string("simple_refinement.tex"),1.0);
+    my_tree1.exportMeshTikz(std::string("./media/simple_refinement.tex"),1.0);
 
     // Test with mandelbrot fractal
 
@@ -277,8 +277,8 @@ int main () {
 
     std::cout<<"Area of the Mandelbrot set = "<<my_tree_mandelbrot.simpleIntegration(mb_set_indicator_function)<<" vs 1.50659177 in litterature"<<std::endl;
 
-    my_tree_mandelbrot.exportMeshTikz(std::string("mandelbrot_refinement.tex"),4.0);
-    my_tree_mandelbrot.exportCentersTikz(std::string("mandelbrot_refinement_ctr.tex"),4.0);
+    my_tree_mandelbrot.exportMeshTikz(std::string("./media/mandelbrot_refinement.tex"),4.0);
+    my_tree_mandelbrot.exportCentersTikz(std::string("./media/mandelbrot_refinement_ctr.tex"),4.0);
     
 
     // Test with a level-set function
@@ -315,7 +315,7 @@ int main () {
     for (unsigned int n = 0; n < N; n++)    {
 
         std::ostringstream fname;
-        fname <<"movie"<<n<<".tex";
+        fname <<"./media/movie"<<n<<".tex";
         std::string filename = fname.str();
 
 
