@@ -34,13 +34,7 @@ protected:
 
     std::shared_ptr<Cell<T>> parent_cell; 
 
-    // The level makes sense only in relation to the quadtree the cell belongs
-    // to, hence it is a member.
-    unsigned int getLevel(std::shared_ptr<Cell<T>> cell)    
-    {
-        return (unsigned)(log2(x_size / cell->getDx()));
-    }
-
+ 
 
     bool updateQuadTreeDelete(std::shared_ptr<Cell<T>> cell, const RefinementCriterion<T> & criterion)
     {
@@ -96,6 +90,15 @@ public:
 
     ~QuadTree() = default;
 
+
+    // The level makes sense only in relation to the quadtree the cell belongs
+    // to, hence it is a member.
+    unsigned int getLevel(std::shared_ptr<Cell<T>> cell)    
+    {
+        return (unsigned)(log2(x_size / cell->getDx()));
+    }
+
+
     // Simple sequential integration taking a function 
     // as being constant on each cell with the value at the cell
     // center
@@ -108,6 +111,19 @@ public:
             integral += f(leaf->getCenter()) * leaf->cellSurface();
         }
 
+        return integral;
+    }
+
+    T simpleIntegration(std::function<T(std::shared_ptr<Cell<T>>)> & f) const
+    {
+        T integral = 0.0;
+        
+        std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
+
+        for (auto leaf : leaves)    {
+            integral += f(leaf)*leaf->cellSurface();
+        }
+        
         return integral;
     }
 
@@ -243,15 +259,18 @@ public:
 
         std::ofstream output_f;
         output_f.open (filename);
-        output_f<<"\\documentclass[a4paper,11pt, final]{article}\n";
+        //output_f<<"\\documentclass[a4paper,11pt, final]{article}\n";
+        output_f<<"\\documentclass{standalone}\n";
         output_f<<"\\usepackage{tikz} \n";
         output_f<<"\\begin{document}\n";
-        output_f<<"\\begin{center} \n \\begin{tikzpicture}\n";
+        //output_f<<"\\begin{center} \n \\begin{tikzpicture}\n";
+        output_f<<"\\begin{tikzpicture}\n";
 
 
         exportMeshTikzHelp(parent_cell, output_f, scale_factor);
 
-        output_f<<"\\end{tikzpicture}\n \\end{center} \n \\end{document} \n";
+        //output_f<<"\\end{tikzpicture}\n \\end{center} \n \\end{document} \n";
+        output_f<<"\\end{tikzpicture} \n \\end{document} \n";
 
 
         output_f.close();
@@ -322,7 +341,7 @@ void refineWithLevelSetHelp(std::shared_ptr<Cell<T>> cell, const LipschitzFuncti
 
    
 template <typename T>
-void exportMeshTikzHelp(std::shared_ptr<Cell<T>> cell, std::ofstream & output_f, double scale_factor)
+void exportMeshTikzHelp(std::shared_ptr<Cell<T>> cell, std::ofstream & output_f, const T scale_factor)
 {
     if (cell->isLeaf()) {
         std::vector<Point<T>> vertices = cell->getVertices();

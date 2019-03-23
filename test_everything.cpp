@@ -49,7 +49,7 @@ int main () {
 
     // Testing sum and multiplication by a scalar
     std::cout<<"(-) Testing sum and multiplication by a scalar"<<std::endl;
-    std::cout<<"(2.5, -5.0) vs "<<2.5*pt4<<std::endl;
+    std::cout<<"(2.5, -5.0) vs "<<((real) 2.5)*pt4<<std::endl;
     std::cout<<"(0.0, 2.0) vs "<<pt2+pt5<<std::endl;
 
 
@@ -200,7 +200,7 @@ int main () {
     }
 
     // Testing refinement
-    std::cout<<"(-) Testing refinement routines"<<std::endl;
+    std::cout<<"(-) Testing refinement routines and exportTikz"<<std::endl;
 
     class SpaceBasedCriterion : public RefinementCriterion<real>
     {
@@ -220,11 +220,10 @@ int main () {
     };
 
     SpaceBasedCriterion crit3;
-
     my_tree1.updateQuadTree(crit3);
     my_tree1.exportMeshTikz(std::string("simple_refinement.tex"),1.0);
 
-    // Test with mandelbrot
+    // Test with mandelbrot fractal
 
     class MandelbrotCriterion : public RefinementCriterion<real>
     {
@@ -234,12 +233,10 @@ int main () {
 
         bool operator()(std::shared_ptr<Cell<real>> arg) const override
     {
-        real x = arg->getCenter().getX()-1.0;
-        real y = arg->getCenter().getY()-2.0;
+        real x = arg->getCenter().getX()-2.0;
+        real y = arg->getCenter().getY()-1.0;
 
-
-
-        real max_abs = 1000.0;
+        real max_abs = 10000.0;
         real curr_abs = 0.0;
 
         unsigned int it = 0;
@@ -247,25 +244,88 @@ int main () {
         Point<real> p_n (0.0, 0.0);
         Point<real> c (x,y);
 
-        while (it < 50 && curr_abs < 2.0*max_abs)
+        while (it < 1000 && curr_abs < 2.0*max_abs)
         {
             Point<real> tmp = Point<real>(pow(p_n.getX(),2.0)-pow(p_n.getY(),2.0),2*p_n.getX()*p_n.getY()) + c;   
             p_n = tmp;
             curr_abs = p_n.abs();
+            it++;
         }
 
         return (curr_abs < max_abs);
 
     }
     };
-
-    QuadTree<real> my_tree_mandelbrot(3.0, 2.0, 1.0, 5.0);
-    my_tree_mandelbrot.buildUniform(4.0);
+    /*
+    QuadTree<real> my_tree_mandelbrot(3.0, 2.0, 1, 7.0);
+    my_tree_mandelbrot.buildUniform(6);
     MandelbrotCriterion md_crit;
 
+    // Trying to recover the area of the Mandelbrot set,
+    // by a simple integration.
+    // We consider that a cell is inside the set if
+    // it has maximal level.
+
+    std::function<real(std::shared_ptr<Cell<real>>)> mb_set_indicator_function = [&](std::shared_ptr<Cell<real>> cl) { 
+        if (my_tree_mandelbrot.getLevel(cl) >= 7.0)
+            return 1.0;
+        else
+            return 0.0;    
+    };
 
     my_tree_mandelbrot.updateQuadTree(md_crit);
-    my_tree_mandelbrot.exportMeshTikz(std::string("mandelbrot_refinement.tex"),2.5);
+
+    std::cout<<"Area of the Mandelbrot set = "<<my_tree_mandelbrot.simpleIntegration(mb_set_indicator_function)<<" vs 1.50659177 in litterature"<<std::endl;
+
+    my_tree_mandelbrot.exportMeshTikz(std::string("mandelbrot_refinement.tex"),4.0);
+    my_tree_mandelbrot.exportCentersTikz(std::string("mandelbrot_refinement_ctr.tex"),4.0);
+    */
+
+    // Test with a level-set function
+
+    real t = 0.0;
+
+    class MyTimeVaryingLevelSet : public LipschitzFunction<real>
+    {
+    private:
+        real t_m = 0.0;
+    public:
+        MyTimeVaryingLevelSet() : t_m(0.0), LipschitzFunction<real>() {}
+        MyTimeVaryingLevelSet(real lipschitz) : LipschitzFunction<real>(lipschitz) {}
+        ~MyTimeVaryingLevelSet() = default;
+
+        void setTime(real new_time) { t_m = new_time; }
+
+        real operator()(Point<real> arg) const override
+        {
+            Point<double> tmp1 = arg+Point<double>(-0.52+0.2*t_m, -0.55+0.15*t_m);
+            Point<double> tmp2 = arg+Point<double>(-0.23-0.3*t_m, -0.25+0.05*t_m);
+            return std::min(tmp1.abs() - 0.070*(1.0+0.5*t_m), tmp2.abs() - 0.13*(1.0+0.3*t_m));
+        }
+    };
+
+
+    QuadTree<real> my_tree_level_set(1.0, 1.0, 1, 7.0);
+    my_tree_level_set.buildUniform(3);
+    MyTimeVaryingLevelSet ls_crit(1.2);
+
+    unsigned int N = 20;
+    real dt = 1.0/N;
+
+    for (unsigned int n = 0; n < N; n++)    {
+
+        std::ostringstream fname;
+        fname <<"movie"<<n<<".tex";
+        std::string filename = fname.str();
+
+
+        my_tree_level_set.refineWithLevelSet(ls_crit);
+
+        my_tree_level_set.exportMeshTikz(filename, 8.0);
+
+        t = t+dt;
+        ls_crit.setTime(t);
+    }
 
     return 0;
 }
