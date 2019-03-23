@@ -17,6 +17,9 @@ I have started to do this but it should be done in a more proper way and thinkin
 the question of having const pointer and references and stuff like that.
 
 3. Try to factorize the recursive visit and CLEAN the quadtree.h class!
+I got to the conclusion that we cannot or is too difficult and complicates the code
+more than the advantage of factorizing something if any.
+
 
 4. Check the parallel algorithm and find a machine to test it properly
 
@@ -25,6 +28,7 @@ the question of having const pointer and references and stuff like that.
 - cell.h [DONE]
 - lipschitzfunction.h [DONE]
 - refinementcriterion.h [DONE]
+- quadtree.h [SEEMS DONE BUT THINK ABOUT IT]
 
 6. Produce a scheme of the classes and their relationships
 - point.h [DONE]

@@ -256,7 +256,7 @@ int main () {
 
     }
     };
-    /*
+    
     QuadTree<real> my_tree_mandelbrot(3.0, 2.0, 1, 7.0);
     my_tree_mandelbrot.buildUniform(6);
     MandelbrotCriterion md_crit;
@@ -279,7 +279,7 @@ int main () {
 
     my_tree_mandelbrot.exportMeshTikz(std::string("mandelbrot_refinement.tex"),4.0);
     my_tree_mandelbrot.exportCentersTikz(std::string("mandelbrot_refinement_ctr.tex"),4.0);
-    */
+    
 
     // Test with a level-set function
 

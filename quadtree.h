@@ -237,16 +237,16 @@ public:
 
         std::ofstream output_f;
         output_f.open (filename);
-        output_f<<"\\documentclass[a4paper,11pt, final]{article}\n";
+        output_f<<"\\documentclass{standalone}\n";
         output_f<<"\\usepackage{tikz} \n";
         output_f<<"\\begin{document}\n";
-        output_f<<"\\begin{center} \n \\begin{tikzpicture}\n";
+        output_f<<"\\begin{tikzpicture}\n";
 
         for (auto ctr : centers)    {
             output_f<<"\\draw [fill=blue, line width = 0.1pt]"<<(scale_factor*ctr)<<" circle[radius= 0.5pt]; \n";
 
         }
-        output_f<<"\\end{tikzpicture}\n \\end{center} \n \\end{document} \n";
+        output_f<<"\\end{tikzpicture}\n \\end{document} \n";
 
 
         output_f.close();
@@ -259,17 +259,14 @@ public:
 
         std::ofstream output_f;
         output_f.open (filename);
-        //output_f<<"\\documentclass[a4paper,11pt, final]{article}\n";
         output_f<<"\\documentclass{standalone}\n";
         output_f<<"\\usepackage{tikz} \n";
         output_f<<"\\begin{document}\n";
-        //output_f<<"\\begin{center} \n \\begin{tikzpicture}\n";
         output_f<<"\\begin{tikzpicture}\n";
 
 
         exportMeshTikzHelp(parent_cell, output_f, scale_factor);
 
-        //output_f<<"\\end{tikzpicture}\n \\end{center} \n \\end{document} \n";
         output_f<<"\\end{tikzpicture} \n \\end{document} \n";
 
 
