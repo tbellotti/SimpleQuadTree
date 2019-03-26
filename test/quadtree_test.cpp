@@ -3,9 +3,10 @@
 #include <string>
 #include <functional>
 #include <algorithm>
+#include <cmath>
 
-#include "quadtree.h"
-#include "lipschitzfunction.h"
+#include "../include/quadtree.h"
+#include "../include/lipschitzfunction.h"
 
 template <typename T>
 class LevelSet : public LipschitzFunction<T>
@@ -13,6 +14,7 @@ class LevelSet : public LipschitzFunction<T>
 public:
     LevelSet() : LipschitzFunction<T>() {}
     LevelSet(T lipschitz) : LipschitzFunction<T>(lipschitz) {}
+
 
     T operator()(Point<T> arg) const override
     {
@@ -39,6 +41,7 @@ public:
         return std::min(tmp1.abs() - 0.070, tmp2.abs() - 0.13);
     }
 };
+
 
 template <typename T>
 class TestCriterion : public RefinementCriterion<T>
@@ -73,11 +76,11 @@ int main ()
     TestCriterion<double> my_criterion;
 
     //my_tree.updateQuadTree(my_criterion);
-    my_tree.refineWithLevelSet(my_level_set);
+    my_tree.updateWithLevelSet(my_level_set);
     //my_tree.updateQuadTree(my_criterion);
 
-    my_tree.exportMeshTikz(std::string("draw1.tex"), 10.0);
-    my_tree.exportCentersTikz(std::string("draw2.tex"), 10.0);
+    my_tree.exportMeshTikz(std::string("./media/draw1.tex"));
+    my_tree.exportCentersTikz(std::string("./media/draw2.tex"));
 
 
 

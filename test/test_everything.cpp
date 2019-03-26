@@ -221,7 +221,7 @@ int main () {
 
     SpaceBasedCriterion crit3;
     my_tree1.updateQuadTree(crit3);
-    my_tree1.exportMeshTikz(std::string("./media/simple_refinement.tex"),1.0);
+    my_tree1.exportMeshTikz(std::string("./media/simple_refinement.tex"));
 
     // Test with mandelbrot fractal
 
@@ -277,8 +277,8 @@ int main () {
 
     std::cout<<"Area of the Mandelbrot set = "<<my_tree_mandelbrot.simpleIntegration(mb_set_indicator_function)<<" vs 1.50659177 in litterature"<<std::endl;
 
-    my_tree_mandelbrot.exportMeshTikz(std::string("./media/mandelbrot_refinement.tex"),4.0);
-    my_tree_mandelbrot.exportCentersTikz(std::string("./media/mandelbrot_refinement_ctr.tex"),4.0);
+    my_tree_mandelbrot.exportMeshTikz(std::string("./media/mandelbrot_refinement.tex"));
+    my_tree_mandelbrot.exportCentersTikz(std::string("./media/mandelbrot_refinement_ctr.tex"));
     
 
     // Test with a level-set function
@@ -319,9 +319,9 @@ int main () {
         std::string filename = fname.str();
 
 
-        my_tree_level_set.refineWithLevelSet(ls_crit);
+        my_tree_level_set.updateWithLevelSet(ls_crit);
 
-        my_tree_level_set.exportMeshTikz(filename, 8.0);
+        my_tree_level_set.exportMeshTikz(filename);
 
         t = t+dt;
         ls_crit.setTime(t);

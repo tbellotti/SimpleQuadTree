@@ -16,8 +16,8 @@ template <typename T>
 class Point
 {
 protected:
-    T x_coord = 0.0;
-    T y_coord = 0.0;
+    T x_coord = T(0.0);
+    T y_coord = T(0.0);
 
 public:
     // Constructors and destructor
@@ -25,7 +25,7 @@ public:
     Point(T x, T y) : x_coord(x), y_coord(y) {}
     explicit Point(T x) : x_coord(x), y_coord(x) {}
     Point(const Point & pt) : x_coord(pt.x_coord), y_coord(pt.y_coord) {}
-    ~Point() = default;
+    virtual ~Point() = default;
 
     // Copy assignment operator
     Point & operator=(const Point & rhs)
@@ -36,12 +36,12 @@ public:
     }
 
     // Getters
-    inline T getX() const { return x_coord; }
-    inline T getY() const { return y_coord; }
+    T getX() const { return x_coord; }
+    T getY() const { return y_coord; }
 
     // Setters 
-    inline void setX(T x) { x_coord = x; }
-    inline void setY(T y) { y_coord = y; }
+    void setX(T x) { x_coord = x; }
+    void setY(T y) { y_coord = y; }
 
     // Print (for debugging purpose)
     std::string print() const
@@ -53,7 +53,6 @@ public:
 
     T abs() const
     {
-        //Point<T> origin = Point<T>(0.0, 0.0);
         return distance(Point<T>(0.0, 0.0));
     }
 
@@ -75,7 +74,7 @@ Point<T> operator* (const T & lhs, const Point<T> & rhs)
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Point<T> & pt)
+std::ostream& operator<<(std::ostream & os, const Point<T> & pt)
 {
     os<<"("<<std::to_string(pt.getX())<<", "<<std::to_string(pt.getY())<<")";
     return os;
@@ -87,8 +86,5 @@ Point<T> operator+ (const Point<T> & lhs, const Point<T> & rhs)
     return Point<T>(lhs.getX() + rhs.getX(), lhs.getY() + rhs.getY());       
 }
 
-
-
 #endif
-
 

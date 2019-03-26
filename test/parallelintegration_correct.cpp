@@ -91,7 +91,7 @@ int main ()
         my_tree.buildUniform(10);
 
         LevelSet<double> my_level_set(1.2);
-        my_tree.refineWithLevelSetNew(&my_level_set);
+        my_tree.updateWithLevelSet(&my_level_set);
         
         auto leaves = my_tree.getLeaves();
         for (auto leaf : leaves)    {

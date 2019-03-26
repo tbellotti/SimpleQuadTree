@@ -7,7 +7,8 @@ Thing to remind to tell during the discussion:
 - cell.h [DONE]
 - quadtree.h [DONE, but check it for functions once all the rest is clear]
 - lipschitzfunction.h [DONE]
-- refinementcriterion.h [DONE, but look again if we change something]
+- refinementcriterion.h [DONE]
+- levelsetcriterion.h [DONE]
 
 2. Think at the way of deal with callable objects and their inheritance (look at the main in order to 
 understand what we want to obtain and try to define as less classes as possible).
@@ -33,9 +34,10 @@ more than the advantage of factorizing something if any.
 6. Produce a scheme of the classes and their relationships
 - point.h [DONE]
 - cell.h [DONE]
-
+- refinementcriterion.h [DONE]
+- levelsetcriterion.h [DONE]
 
 7. Reorganize the project into FOLDER at the very end...
-
+DONE.
 
 8. Control the presence of destructors and similar for each class.
