@@ -45,6 +45,7 @@ public:
         return father;
     }
 
+
     void setField(const RGBColor & new_color)
     {
         field = new_color;
@@ -76,6 +77,20 @@ public:
     
     void mergeCell()
     {
+        /*
+        RGBColor overall_color = meanField(std::shared_ptr<CellWithFather<T>>(this));
+        std::cout<<"Here "<<overall_color<<std::endl;
+        setField(overall_color);
+        */
+        //setField(RGBColor(100, 100, 100));
+
+        RGBColor mean_l_l = meanField(l_l);
+        RGBColor mean_l_r = meanField(l_r);
+        RGBColor mean_u_l = meanField(u_l);
+        RGBColor mean_u_r = meanField(u_r);
+
+        setField(1.0/4.0 * (mean_l_l + mean_l_r + mean_u_l + mean_u_r));
+
         l_l = nullptr;
         l_r = nullptr;
         u_l = nullptr;
@@ -86,6 +101,8 @@ public:
     {
         return base_point + Point<T>(0.5*dx, 0.5*dy);
     }
+
+
 
 std::vector<std::shared_ptr<CellWithFather<T>>> getChildren() const
     {
@@ -121,6 +138,66 @@ std::ostream & operator<<(std::ostream & os, const CellWithFather<T> & cl)
     return os;
 }
 
+template <typename T>
+RGBColor meanField(std::shared_ptr<CellWithFather<T>> cell)
+{
+    std::vector<std::shared_ptr<CellWithFather<T>>> leaves;
+    getLeavesHelp(cell, leaves);
+
+    double prefactor = 1.0/((double) leaves.size());
+
+    auto it = leaves.cbegin();
+
+    RGBColor sum = (*it)->getField();
+    it++;
+
+    for ( ; it < leaves.cend(); it++)   {
+        sum += (*it)->getField();
+    }
+
+    return prefactor * sum;
+}
+
+template <typename T>
+double stdDevField(std::shared_ptr<CellWithFather<T>> cell)
+{
+    RGBColor mean_color = meanField(cell);
+    std::vector<std::shared_ptr<CellWithFather<T>>> leaves;
+    getLeavesHelp(cell, leaves);
+
+    double prefactor = 1.0/((double) leaves.size());
+
+    auto it = leaves.cbegin();
+
+    RGBColor diff = (*it)->getField() - mean_color; 
+    double sum = diff.abs();
+    it++;
+
+    for ( ; it < leaves.cend(); it++)   {
+        diff = (*it)->getField() - mean_color; 
+        sum += diff.abs();   
+    }
+
+    return sqrt(prefactor * sum);
+
+}
+
+template <typename T>
+void getLeavesHelp(std::shared_ptr<CellWithFather<T>> cell, std::vector<std::shared_ptr<CellWithFather<T>>> & to_fill) {
+
+    if (cell->isLeaf()) {
+        to_fill.push_back(cell);
+    }
+    else    {
+        std::vector<std::shared_ptr<CellWithFather<T>>> children_vector = cell->getChildren();
+
+        getLeavesHelp(children_vector[0], to_fill);
+        getLeavesHelp(children_vector[1], to_fill);
+        getLeavesHelp(children_vector[2], to_fill);
+        getLeavesHelp(children_vector[3], to_fill);
+    }
+
+}
 
 #endif
 

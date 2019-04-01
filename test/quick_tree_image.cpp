@@ -12,7 +12,6 @@ int main()
     std::cout<<"Uniform made"<<std::endl;
 
 
-    my_tree.exportMeshTikz(std::string("test.tex"));
 
     std::tuple<unsigned, unsigned, std::vector<RGBColor>> test_parser = parsePBM(std::string("/home/thomas/SimpleQuadTree/media/images/sample1_ascii.ppm"));
 
@@ -25,9 +24,13 @@ int main()
 
     std::cout<<std::get<0>(test_parser)<<"  |  "<<std::get<1>(test_parser)<<std::endl;
 
-    my_tree.createFromImage(std::string("/home/thomas/SimpleQuadTree/media/images/sample1_ascii.ppm"));
+    my_tree.createFromImage(std::string("/home/thomas/SimpleQuadTree/media/images/sample5_ascii.ppm"));
 
+    my_tree.exportMeshTikz(std::string("test2.tex"));
 
+    my_tree.simplifyImage();
+
+    my_tree.exportMeshTikz(std::string("test3.tex"));
 
 
     return 0;

@@ -60,7 +60,7 @@ public:
     T getDiagonal() const { return std::sqrt(dx*dx + dy*dy); } 
     T cellSurface() const { return dx * dy; }
 
-    void splitCell()    
+    virtual void splitCell()    
     {
         if (isLeaf())    {
             // Lower Left son

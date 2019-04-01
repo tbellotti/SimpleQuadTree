@@ -8,6 +8,9 @@
 #include <sstream>
 #include <vector>
 #include <tuple>
+#include <cmath>
+
+#include "matrix.h"
 
 class RGBColor
 {
@@ -33,11 +36,28 @@ public:
 
     // Add other stuff when needed.
 
+    double distanceEuclidian(const RGBColor &) const;
+    double distanceEuclidianCorrected(const RGBColor &) const;
+
+    RGBColor & operator+=(const RGBColor &);
+
+    double abs() const;
+
+
 };
 
 std::tuple<unsigned int, unsigned int, std::vector<RGBColor>> parsePBM(const std::string &);
 
 std::ostream & operator<<(std::ostream &, const RGBColor &);
+
+void indicesVectorBuilderHelp(const Matrix<size_t> &, std::vector<size_t> &, size_t, size_t, size_t, size_t);
+
+RGBColor operator+ (const RGBColor &, const RGBColor &);
+RGBColor operator- (const RGBColor &, const RGBColor &);
+
+
+RGBColor operator* (double, const RGBColor &);
+
 
 #endif
 

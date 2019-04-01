@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cmath>
 #include "cellwithfather.h"
+#include "refinementcriterioncolor.h"
 
 template <typename T>
 class QuadTreeImage
@@ -37,11 +38,59 @@ protected:
         max_level = mx_l;
     }
 
+
+
+    bool simplifyImageDelete(const std::shared_ptr<CellWithFather<T>> cell, const RefinementCriterionColor<T> & criterion)
+    {
+        std::vector<std::shared_ptr<CellWithFather<T>>> children_vector = cell->getChildren();
+
+        if (!cell->isLeaf())    {
+            if (getLevel(cell) >= min_level
+                && children_vector[0]->isLeaf() && children_vector[1]->isLeaf() 
+                && children_vector[2]->isLeaf() && children_vector[3]->isLeaf()
+                && !criterion(cell))   {
+
+                cell->mergeCell();
+                return true;
+            }
+            else    {
+                return simplifyImageDelete(children_vector[0], criterion) ||
+                   simplifyImageDelete(children_vector[1], criterion) ||
+                   simplifyImageDelete(children_vector[2], criterion) ||
+                   simplifyImageDelete(children_vector[3], criterion);
+            }
+        }
+        else    {
+            return false;
+        }
+    }
+
+
 public:
     QuadTreeImage(T xsize, T ysize, unsigned int minl, unsigned int maxl) : 
             x_size(xsize), y_size(ysize), min_level(minl), max_level(maxl), 
             parent_cell(new CellWithFather<T>(Point<T>(0.0, 0.0), xsize, ysize, nullptr)) {}
 
+
+
+    // The level makes sense only in relation to the quadtree the cell belongs
+    // to, hence it is a member.
+    unsigned int getLevel(const std::shared_ptr<CellWithFather<T>> cell)    
+    {
+        return (unsigned)(log2(x_size / cell->getDx()));
+    }
+
+    void simplifyImage()//const RefinementCriterionColor<T> & criterion)
+    {
+
+        const RefinementCriterionColor<T> crt(0.50);      
+        bool updated = true;
+
+        while (updated) { 
+            // Deleting unuseful cells.
+            updated = simplifyImageDelete(parent_cell, crt);
+        }        
+    }
 
     void createFromImage(std::string filename)
     {
@@ -67,8 +116,8 @@ public:
         std::vector<RGBColor>::const_iterator it = std::get<2>(parsed_file).cbegin();
 
         std::cout<<"Here 1"<<std::endl;
-        //putColorsInTreeHelp(parent_cell, it);
-        putColorsInTreeHelp(parent_cell);
+        putColorsInTreeHelp(parent_cell, it);
+        //putColorsInTreeHelp(parent_cell);
 
     }
 
@@ -112,15 +161,20 @@ public:
         output_f<<"\\documentclass{standalone}\n";
         output_f<<"\\usepackage{tikz} \n";
         output_f<<"\\begin{document}\n";
-        output_f<<"\\begin{tikzpicture}\n";
+        output_f<<"\\begin{tikzpicture}[define rgb/.code={\\definecolor{mycolor}{RGB}{#1}},rgb color/.style={define rgb={#1},mycolor}]\n";
 
         std::vector<std::shared_ptr<CellWithFather<T>>> leaves = getLeaves();
         for (std::shared_ptr<CellWithFather<T>> leaf : leaves)    {
             std::vector<Point<T>> vertices = leaf->getVertices();
+            RGBColor fld = leaf->getField();
+            //Point<T> ctr = leaf->getCenter();
+
+            output_f<<"\\fill [rgb color={"<<fld.getRed()<<","<<fld.getGreen()<<","<<fld.getBlue()<<"}]"<<vertices[0]<<" rectangle "<<vertices[2]<<"; \n";
+            /*std::vector<Point<T>> vertices = leaf->getVertices();
             output_f<<"\\draw "<<vertices[0]<<" -- "<<vertices[1]<<"; \n";
             output_f<<"\\draw "<<vertices[1]<<" -- "<<vertices[2]<<"; \n";
             output_f<<"\\draw "<<vertices[2]<<" -- "<<vertices[3]<<"; \n";
-            output_f<<"\\draw "<<vertices[3]<<" -- "<<vertices[0]<<"; \n";
+            output_f<<"\\draw "<<vertices[3]<<" -- "<<vertices[0]<<"; \n";*/
         }
 
         output_f<<"\\end{tikzpicture} \n \\end{document} \n";
@@ -148,54 +202,61 @@ void splitHelp(std::shared_ptr<CellWithFather<T>> father, unsigned int level_to_
 
 
 
-template <typename T>
-void getLeavesHelp(std::shared_ptr<CellWithFather<T>> cell, std::vector<std::shared_ptr<CellWithFather<T>>> & to_fill) {
-
-    if (cell->isLeaf()) {
-        to_fill.push_back(cell);
-    }
-    else    {
-        std::vector<std::shared_ptr<CellWithFather<T>>> children_vector = cell->getChildren();
-
-        getLeavesHelp(children_vector[0], to_fill);
-        getLeavesHelp(children_vector[1], to_fill);
-        getLeavesHelp(children_vector[2], to_fill);
-        getLeavesHelp(children_vector[3], to_fill);
-    }
-
-}
 
 template <typename T>
-void putColorsInTreeHelp(std::shared_ptr<CellWithFather<T>> father)//, std::vector<RGBColor>::const_iterator & it)
+void putColorsInTreeHelp(std::shared_ptr<CellWithFather<T>> father, std::vector<RGBColor>::const_iterator & it)
 {
 
-    std::cout<<"Here 2: "<<father->isLeaf()<<std::endl;
+
+    
+    //std::cout<<"IsLeaf: "<<father->isLeaf()<<std::endl;
+
     if (father->isLeaf())   {
-        std::cout<<"Here 3"<<std::endl;
-        //father->setField(*it);
-        //it++;
-        std::cout<<"Here ??"<<std::endl;
+        //std::cout<<"Elaborating leaf"<<std::endl;
+        father->setField(*it);
+        //std::cout<<"Field set = "<<*it<<std::endl;
+        it++;
+        //std::cout<<"Iterator incremented"<<std::endl;
+
         return;
-        std::cout<<"Here MO"<<std::endl;
 
     }
     else    {
-            std::cout<<"Here K"<<std::endl;
+            std::cout<<"Before getting sons"<<std::endl;
             std::vector<std::shared_ptr<CellWithFather<T>>> children_vector = father->getChildren();
-            std::cout<<"Here 4"<<std::endl;
+            std::cout<<"Sons gotten"<<std::endl;
 
             /*
-            putColorsInTreeHelp(children_vector[3], it);
-            putColorsInTreeHelp(children_vector[4], it);
-            putColorsInTreeHelp(children_vector[1], it);
             putColorsInTreeHelp(children_vector[2], it);
+            putColorsInTreeHelp(children_vector[3], it);
+            putColorsInTreeHelp(children_vector[0], it);
+            putColorsInTreeHelp(children_vector[1], it);*/
+
+            
+            putColorsInTreeHelp(children_vector[0], it);
+            putColorsInTreeHelp(children_vector[1], it);
+            putColorsInTreeHelp(children_vector[3], it);
+            putColorsInTreeHelp(children_vector[2], it);
+
+/*
+            if (children_vector[2] != nullptr)  {
+                std::cout<<"Descending 2"<<std::endl;
+                putColorsInTreeHelp(children_vector[2]);
+            }
+            //std::cout<<"AA : "<<children_vector[4]<<std::endl;
+            if (children_vector[3] != nullptr)  {
+                std::cout<<"Descending 3"<<std::endl;
+                putColorsInTreeHelp(children_vector[3]);
+            }
+            if (children_vector[0] != nullptr)  {
+                std::cout<<"Descending 0"<<std::endl;
+                putColorsInTreeHelp(children_vector[0]);
+            }
+            if (children_vector[1] != nullptr)  {
+                std::cout<<"Descending 1"<<std::endl;
+                putColorsInTreeHelp(children_vector[1]);
+            }
 */
-
-            putColorsInTreeHelp(children_vector[3]);
-            putColorsInTreeHelp(children_vector[4]);
-            putColorsInTreeHelp(children_vector[1]);
-            putColorsInTreeHelp(children_vector[2]);
-
 }
 
 }
