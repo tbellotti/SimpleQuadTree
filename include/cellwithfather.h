@@ -40,7 +40,7 @@ public:
     T getDiagonal() const { return std::sqrt(dx*dx + dy*dy); } 
     T cellSurface() const { return dx * dy; }
 
-    const CellWithFather<T> getFather() const
+    const CellWithFather<T> * getFather() const
     {
         return father;
     }
@@ -182,6 +182,8 @@ double stdDevField(std::shared_ptr<CellWithFather<T>> cell)
 
 }
 
+// This can be implemented for every Cell the generic class, but not as a member
+// and used by the tree.
 template <typename T>
 void getLeavesHelp(std::shared_ptr<CellWithFather<T>> cell, std::vector<std::shared_ptr<CellWithFather<T>>> & to_fill) {
 
@@ -198,6 +200,22 @@ void getLeavesHelp(std::shared_ptr<CellWithFather<T>> cell, std::vector<std::sha
     }
 
 }
+/*
+template <typename T>
+std::shared_ptr<CellWithFather<T>> getNeighLargerOrEqual(std::shared_ptr<CellWithFather<T>> cell, char dir)
+{
+    if (dir == 'n') {
+        if (cell.getFather() == nullptr)
+            return nullptr;
+        if (cell.getFather().)
+    }
+
+    if (dir == 's') {}
+
+
+}
+*/
+
 
 #endif
 

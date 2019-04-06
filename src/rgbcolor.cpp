@@ -29,9 +29,7 @@ double RGBColor::distanceEuclidian(const RGBColor & rhs) const
 }
 double RGBColor::distanceEuclidianCorrected(const RGBColor & rhs) const 
 {
-    // Modify accordingly when have time...
-    //return sqrt(pow(red - rhs.red, 2.0) + pow(green - rhs.green, 2.0) + pow(blue - rhs.blue, 2.0));
-    return 0.0;
+    return sqrt(2.0*pow(red - rhs.red, 2.0) + 4.0*pow(green - rhs.green, 2.0) + 3.0*pow(blue - rhs.blue, 2.0));
 }
 
 RGBColor & RGBColor::operator+=(const RGBColor & rhs)
@@ -72,8 +70,6 @@ std::tuple<unsigned int, unsigned int, std::vector<RGBColor>> parsePBM(const std
 
         unsigned short int red = 0, green = 0, blue = 0;
 
-        std::cout<<"Parsing file"<<std::endl;
-
         while (std::getline(file_stream, line))
         {
 
@@ -96,9 +92,6 @@ std::tuple<unsigned int, unsigned int, std::vector<RGBColor>> parsePBM(const std
 
         std::vector<size_t> indices(vector_buffer.size());
 
-
-        std::cout<<"Creating vector of indices"<<std::endl;
-
         for (size_t idx = 0; idx < indices.size(); idx++)   {
             indices[idx] = idx;
         }
@@ -107,24 +100,16 @@ std::tuple<unsigned int, unsigned int, std::vector<RGBColor>> parsePBM(const std
         const Matrix<size_t> mtx(dim_x, indices);
         std::vector<size_t> indices_ordered;
 
-        std::cout<<"\n Ordering vector of indices"<<std::endl;
 
         indicesVectorBuilderHelp(mtx, indices_ordered, 0, dim_y-1, 0, dim_x-1);
 
         std::vector<RGBColor> vector_to_return(indices_ordered.size());  
 
-        for (auto el : indices_ordered) {
-            std::cout<<el<<" ! ";
-        }
-
-
-        std::cout<<"Rearranging color pixels"<<std::endl;
-
+    
         for (size_t idx = 0; idx < indices_ordered.size(); idx++)   {
             vector_to_return[idx] = vector_buffer[indices_ordered[idx]];
         }
         // returning 
-        std::cout<<"Ready to return"<<std::endl;
 
         return std::make_tuple(dim_x, dim_y, vector_to_return);
     } 
@@ -142,9 +127,7 @@ void indicesVectorBuilderHelp(const Matrix<size_t> & mt, std::vector<size_t> & t
                          size_t i_start, size_t i_end, size_t j_start, size_t j_end)
 {
 
-    std::cout<<"Treating i in "<<i_start<<", "<<i_end<<" and j in "<<j_start<<", "<<j_end<<std::endl;
     if (i_start == i_end)   {
-        std::cout<<"The end with "<<i_start<<std::endl;
         to_fill.push_back(mt.getEntry(i_start, j_start));
     }
     else    {

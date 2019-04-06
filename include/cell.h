@@ -74,7 +74,7 @@ public:
         }
     }
 
-    void mergeCell()
+    virtual void mergeCell()
     {
         l_l = nullptr;
         l_r = nullptr;
@@ -82,6 +82,8 @@ public:
         u_r = nullptr;
     }
 
+    // For classes inheriting from Cell, these pointers must
+    // be cast into the right type.
     std::vector<std::shared_ptr<Cell<T>>> getChildren() const
     {
     /* Scheme:
@@ -123,6 +125,34 @@ std::ostream & operator<<(std::ostream & os, const Cell<T> & cl)
 {
     os<<"Center: "<<cl.getCenter()<<", dx = "<<cl.getDx()<<", dy = "<<cl.getDy();
     return os;
+}
+
+
+template <typename T>
+std::vector<std::shared_ptr<Cell<T>>> getLeaves(std::shared_ptr<Cell<T>> base)
+{
+    std::vector<std::shared_ptr<Cell<T>>> to_return;
+    getLeavesHelp(base, to_return);
+
+    return to_return;
+}
+
+
+template <typename T>
+void getLeavesHelp(std::shared_ptr<Cell<T>> cell, std::vector<std::shared_ptr<Cell<T>>> & to_fill) {
+
+    if (cell->isLeaf()) {
+        to_fill.push_back(cell);
+    }
+    else    {
+        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+        
+        getLeavesHelp(children_vector[0], to_fill);
+        getLeavesHelp(children_vector[1], to_fill);
+        getLeavesHelp(children_vector[2], to_fill);
+        getLeavesHelp(children_vector[3], to_fill);
+    }
+
 }
 
 #endif
