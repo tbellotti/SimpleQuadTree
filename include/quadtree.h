@@ -42,9 +42,14 @@ protected:
                 && children_vector[0]->isLeaf() && children_vector[1]->isLeaf() 
                 && children_vector[2]->isLeaf() && children_vector[3]->isLeaf()
                 && !criterion(cell))   {
-
-                cell->mergeCell();
-                return true;
+                // We compute the value of the criterion even when
+                // the cell has already been scanned and declared not to
+                // erase because the function is very fast to evaluate
+                // that adding a flag in the Cell class to check this
+                // gives a slight slow down.
+                    cell->mergeCell();
+                    return true;
+                            
             }
             else    {
                 return updateQuadTreeDelete(children_vector[0], criterion) ||
@@ -147,8 +152,12 @@ public:
         updateQuadTreeCreate(parent_cell, criterion);
 
         bool updated = true;
-
+        int i = 0;
         while (updated) { 
+            
+            std::cout<<"# "<<i<<std::endl;
+            i++;
+
             // Deleting unuseful cells.
             updated = updateQuadTreeDelete(parent_cell, criterion);
         }        
@@ -166,12 +175,20 @@ public:
         return to_return;
     }
 
+
     std::vector<std::shared_ptr<Cell<T>>> getLeaves() const
     {
+        /*
         std::vector<std::shared_ptr<Cell<T>>> to_return;
         getLeavesHelp(parent_cell, to_return);
-
-        return to_return;
+        */
+        /*
+        // Super ugly notation but works.
+        using ::getLeaves;
+        return getLeaves(parent_cell);
+        */
+        return parent_cell->getLeaves();
+        //return to_return;
     }
 
     // Used to export the plot of the mesh in a LaTeX file.
@@ -206,13 +223,13 @@ public:
         output_f<<"\\begin{document}\n";
         output_f<<"\\begin{tikzpicture}\n";
 
-        std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
+        std::vector<std::shared_ptr<Cell<T>>> leaves = parent_cell->getLeaves();
         for (std::shared_ptr<Cell<T>> leaf : leaves)    {
             std::vector<Point<T>> vertices = leaf->getVertices();
-            output_f<<"\\draw "<<vertices[0]<<" -- "<<vertices[1]<<"; \n";
-            output_f<<"\\draw "<<vertices[1]<<" -- "<<vertices[2]<<"; \n";
-            output_f<<"\\draw "<<vertices[2]<<" -- "<<vertices[3]<<"; \n";
-            output_f<<"\\draw "<<vertices[3]<<" -- "<<vertices[0]<<"; \n";
+            output_f<<"\\draw [ultra thin]"<<vertices[0]<<" -- "<<vertices[1]<<"; \n";
+            output_f<<"\\draw [ultra thin]"<<vertices[1]<<" -- "<<vertices[2]<<"; \n";
+            output_f<<"\\draw [ultra thin]"<<vertices[2]<<" -- "<<vertices[3]<<"; \n";
+            output_f<<"\\draw [ultra thin]"<<vertices[3]<<" -- "<<vertices[0]<<"; \n";
         }
 
         output_f<<"\\end{tikzpicture} \n \\end{document} \n";
@@ -266,22 +283,7 @@ void splitHelp(std::shared_ptr<Cell<T>> cell, unsigned int level_to_go) {
 }
 
 
-template <typename T>
-void getLeavesHelp(std::shared_ptr<Cell<T>> cell, std::vector<std::shared_ptr<Cell<T>>> & to_fill) {
 
-    if (cell->isLeaf()) {
-        to_fill.push_back(cell);
-    }
-    else    {
-        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-        getLeavesHelp(children_vector[0], to_fill);
-        getLeavesHelp(children_vector[1], to_fill);
-        getLeavesHelp(children_vector[2], to_fill);
-        getLeavesHelp(children_vector[3], to_fill);
-    }
-
-}
 
 #endif
 

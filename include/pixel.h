@@ -63,17 +63,25 @@ public:
  
         // As we have implemented it, it will return only the base cell
         // if it does not contain children (it is the leaf)
-        std::vector<std::shared_ptr<Cell<T>>> ch_l_l = getLeaves(this->l_l);
-        std::vector<std::shared_ptr<Cell<T>>> ch_l_r = getLeaves(this->l_r);
-        std::vector<std::shared_ptr<Cell<T>>> ch_u_l = getLeaves(this->u_l);
-        std::vector<std::shared_ptr<Cell<T>>> ch_u_r = getLeaves(this->u_r);
-
+        /*
+        if (this->isLeaf())
+        {
+            to_return.push_back(this->shared_from_this());
+        }
+        else{
+        */
+        std::vector<std::shared_ptr<Cell<T>>> ch_l_l = this->l_l->getLeaves();//getLeaves(this->l_l);
+        std::vector<std::shared_ptr<Cell<T>>> ch_l_r = this->l_r->getLeaves();//getLeaves(this->l_r);
+        std::vector<std::shared_ptr<Cell<T>>> ch_u_l = this->u_l->getLeaves();//getLeaves(this->u_l);
+        std::vector<std::shared_ptr<Cell<T>>> ch_u_r = this->u_r->getLeaves();//getLeaves(this->u_r);
+        
         std::vector<std::shared_ptr<Cell<T>>> leaves;
         leaves.reserve(ch_l_l.size()+ch_l_r.size()+ch_u_l.size()+ch_u_r.size());
         leaves.insert(leaves.end(), ch_l_l.begin(), ch_l_l.end());
         leaves.insert(leaves.end(), ch_l_r.begin(), ch_l_r.end());
         leaves.insert(leaves.end(), ch_u_l.begin(), ch_u_l.end());
         leaves.insert(leaves.end(), ch_u_r.begin(), ch_u_r.end());
+        
 
         // Casting the pointers
         for (auto el : leaves)  {
@@ -91,14 +99,19 @@ public:
 
         else    {
             std::vector<std::shared_ptr<Pixel<T>>> leaves_cast = getLeavesCast();
-        
+
             double prefactor = 1.0/((double) leaves_cast.size());
             auto it = leaves_cast.cbegin();
+
             RGBColor sum = (*it)->getField();
+
             it++;
 
+
             for ( ; it < leaves_cast.cend(); it++)   {
+
                 sum += (*it)->getField();
+
             }
 
             return prefactor * sum;
@@ -107,6 +120,7 @@ public:
 
     double stdDevField() const
     {
+        
 
         if (this->isLeaf()) {
             // No variance inside
@@ -114,6 +128,7 @@ public:
         }
         else    {
             RGBColor mean_color = meanField();
+
             std::vector<std::shared_ptr<Pixel<T>>> leaves = getLeavesCast();
             double prefactor = 1.0/((double) leaves.size());
             auto it = leaves.cbegin();

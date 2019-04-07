@@ -15,6 +15,9 @@ protected:
     unsigned int max_level;
     std::shared_ptr<Pixel<T>> parent_cell; 
 
+
+
+
     bool simplifyImageDelete(const std::shared_ptr<Pixel<T>> cell, const CriterionVariance<T> & criterion)
     {
         std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
@@ -25,9 +28,9 @@ protected:
         }
 
         if (!cell->isLeaf())    {
-            if (getLevel(cell) >= min_level
+            if (getLevel(cell) >= min_level && !cell->getFlag()
                 && children_vector_cast[0]->isLeaf() && children_vector_cast[1]->isLeaf() 
-                && children_vector_cast[2]->isLeaf() && children_vector_cast[3]->isLeaf() && !cell->getFlag())   {
+                && children_vector_cast[2]->isLeaf() && children_vector_cast[3]->isLeaf())   {
 
                 if (!criterion(cell))   {
                     cell->mergeCell();
@@ -37,6 +40,7 @@ protected:
                     cell->setFlag(true);
                     return false;
                 }
+            
             }
             else    {
                 return simplifyImageDelete(children_vector_cast[0], criterion) ||
@@ -68,6 +72,15 @@ public:
             parent_cell(new Pixel<T>(Point<T>(0.0, 0.0), xsize, ysize)) {}
     ~Image() = default;
 
+    unsigned int getMinLevel() const
+    {
+        return min_level;
+    }
+
+    unsigned int getMaxLevel() const
+    {
+        return max_level;
+    }
 
     void clear()
     {
@@ -87,11 +100,48 @@ public:
         const CriterionVariance<T> crt(threshold);      
         bool updated = true;
 
+
+        int i = 0; // Foo flag to see what happens
+
         while (updated) { 
+            std::cout<<"Pass # "<<i<<std::endl;
+            i++;
             // Deleting unuseful cells.
             updated = simplifyImageDelete(parent_cell, crt);
         }        
     }
+
+    // It seems to be superslow because we have to read
+    // write a lot of data
+    void simplifyImageNew(double threshold)
+    {
+        const CriterionVariance<T> crt(threshold);      
+        bool updated = true;
+        int i = 0;
+        while (updated && i < 1000) {
+            i++;
+            //std::cout<<"Pass # "<<i<<std::endl;
+
+            updated = false;
+            std::vector<std::shared_ptr<Cell<T>>> pre_leaves = parent_cell->getPreLeaves();
+            std::cout<<"Pass # "<<i<<" with # preleaves = "<<pre_leaves.size()<<std::endl;
+
+            int j = 0;
+            for (auto pl : pre_leaves)  {
+                std::cout<<"Null Pointer before cast = "<<(pl==nullptr)<<std::endl;
+                std::shared_ptr<Pixel<T>> tmp_pt = std::static_pointer_cast<Pixel<T>>(pl);
+                std::cout<<"Criterion for "<<j<<" Null ptr = "<<(tmp_pt==nullptr)<<std::endl;
+                std::cout<<" having "<<crt(tmp_pt)<<std::endl;
+                j++;
+                //std::cout<<tmp_pt->getDx()<<std::endl;
+                if (!crt(tmp_pt))   {
+                    tmp_pt->mergeCell();
+                    updated = true;
+                }
+            }
+        }
+    }
+
 
     void buildUniform(unsigned int m_l) 
     {
@@ -128,7 +178,7 @@ public:
     {
         std::ofstream output_f;
         output_f.open (filename);
-        output_f<<"\\documentclass{standalone}\n";
+        output_f<<"\\RequirePackage{luatex85} \n \\documentclass{standalone}\n";
         output_f<<"\\usepackage{tikz} \n";
         output_f<<"\\begin{document}\n";
         output_f<<"\\begin{tikzpicture}[define rgb/.code={\\definecolor{mycolor}{RGB}{#1}},rgb color/.style={define rgb={#1},mycolor}]\n";

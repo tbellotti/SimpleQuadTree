@@ -83,7 +83,7 @@ public:
     void simplifyImage()//const RefinementCriterionColor<T> & criterion)
     {
 
-        const RefinementCriterionColor<T> crt(0.50);      
+        const RefinementCriterionColor<T> crt(0.10);      
         bool updated = true;
 
         while (updated) { 
@@ -154,7 +154,7 @@ public:
     }
 
 
-    void exportMeshTikz(const std::string & filename) const
+    void exportToFile(const std::string & filename) const
     {
         std::ofstream output_f;
         output_f.open (filename);

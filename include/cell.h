@@ -14,7 +14,7 @@ type T.
 */
 
 template <typename T>
-class Cell
+class Cell : public std::enable_shared_from_this<Cell<T>>
 {
 protected:
     // The const is the reason why we do not have setters
@@ -41,6 +41,7 @@ protected:
     */
 
 public:
+
     // Constructors and destructor
     Cell(Point<T> b_p, T new_dx, T new_dy) : base_point(b_p), dx(new_dx), dy(new_dy) {} 
     virtual ~Cell() = default;
@@ -117,6 +118,24 @@ public:
         return to_return;
     }
 
+    std::vector<std::shared_ptr<Cell<T>>> getLeaves()
+    {
+        std::vector<std::shared_ptr<Cell<T>>> to_return;
+
+        getLeavesHelp(this->shared_from_this(), to_return);
+
+        return to_return;
+    
+    }
+
+    std::vector<std::shared_ptr<Cell<T>>> getPreLeaves()
+    {
+        std::vector<std::shared_ptr<Cell<T>>> to_fill;
+        getPreLeavesHelp(this->shared_from_this(), to_fill);
+        return to_fill;
+    
+    }
+
 };
 
 // Mainly for debugging purposes
@@ -127,7 +146,7 @@ std::ostream & operator<<(std::ostream & os, const Cell<T> & cl)
     return os;
 }
 
-
+/*
 template <typename T>
 std::vector<std::shared_ptr<Cell<T>>> getLeaves(std::shared_ptr<Cell<T>> base)
 {
@@ -136,7 +155,7 @@ std::vector<std::shared_ptr<Cell<T>>> getLeaves(std::shared_ptr<Cell<T>> base)
 
     return to_return;
 }
-
+*/
 
 template <typename T>
 void getLeavesHelp(std::shared_ptr<Cell<T>> cell, std::vector<std::shared_ptr<Cell<T>>> & to_fill) {
@@ -152,6 +171,54 @@ void getLeavesHelp(std::shared_ptr<Cell<T>> cell, std::vector<std::shared_ptr<Ce
         getLeavesHelp(children_vector[2], to_fill);
         getLeavesHelp(children_vector[3], to_fill);
     }
+
+}
+
+
+template <typename T>
+void getPreLeavesHelp(std::shared_ptr<Cell<T>> cell, std::vector<std::shared_ptr<Cell<T>>> & to_fill) 
+{
+    /*
+    if (cell->isLeaf())
+    {
+        to_fill.push_back(nullptr);
+        return;
+    }
+    */
+    std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
+
+
+    // Before it was, without considering that there are
+    // branches with some children which are leaves and some which
+    // are not, yielding some possible rough simplifications
+    /*
+    if (children_vector[0]->isLeaf() || children_vector[1]->isLeaf()
+        || children_vector[2]->isLeaf() || children_vector[3]->isLeaf())    {
+        to_fill.push_back(cell);
+        return;
+    }
+    else    {
+        
+        getPreLeavesHelp(children_vector[0], to_fill);
+        getPreLeavesHelp(children_vector[1], to_fill);
+        getPreLeavesHelp(children_vector[2], to_fill);
+        getPreLeavesHelp(children_vector[3], to_fill);
+    }
+
+    */
+
+    if (children_vector[0]->isLeaf() && children_vector[1]->isLeaf()
+        && children_vector[2]->isLeaf() && children_vector[3]->isLeaf())    {
+        to_fill.push_back(cell);
+    }
+    if (!children_vector[0]->isLeaf())
+        getPreLeavesHelp(children_vector[0], to_fill);
+    if (!children_vector[1]->isLeaf())
+        getPreLeavesHelp(children_vector[1], to_fill);
+    if (!children_vector[2]->isLeaf())
+        getPreLeavesHelp(children_vector[2], to_fill);
+    if (!children_vector[3]->isLeaf())
+        getPreLeavesHelp(children_vector[3], to_fill);
 
 }
 
