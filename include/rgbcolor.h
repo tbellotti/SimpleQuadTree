@@ -54,10 +54,9 @@ void indicesVectorBuilderHelp(const Matrix<size_t> &, std::vector<size_t> &, siz
 
 RGBColor operator+ (const RGBColor &, const RGBColor &);
 RGBColor operator- (const RGBColor &, const RGBColor &);
-
-
 RGBColor operator* (double, const RGBColor &);
 
+std::vector<RGBColor> rainbowOfColors(size_t number_of_colors);
 
 #endif
 

@@ -18,17 +18,17 @@ protected:
     // Indeed no because this criterion is only used by
     // the tree which does not have the right and the necessity
     // to modify the level-set function.
-    const LipschitzFunction<T> * level_set; // We need a pointer because
+    const LipschitzFunction<T> & level_set; // We need a pointer because
                         // the classes we use inherits from it
                         // and a reference is not assignable
 
 public:
-    LevelSetCriterion(const LipschitzFunction<T> * ls) : RefinementCriterion<T>(), level_set(ls) {}
+    LevelSetCriterion(const LipschitzFunction<T> & ls) : RefinementCriterion<T>(), level_set(ls) {}
     virtual ~LevelSetCriterion() = default;
 
     virtual bool operator()(std::shared_ptr<Cell<T>> arg) const override
     {
-        return (std::abs((*level_set)(arg->getCenter())) <= level_set->getLipschitzConstant() * arg->getDiagonal());
+        return (std::abs((level_set)(arg->getCenter())) <= level_set.getLipschitzConstant() * arg->getDiagonal());
     }
 };
 

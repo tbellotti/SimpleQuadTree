@@ -58,7 +58,7 @@ int main () {
     std::cout<<std::endl<<"[2] Testing cell.h"<<std::endl;
     // Testing constructors
     std::cout<<"(-) Testing constructors"<<std::endl;
-    Cell<real> cell1(pt2, 2.0, 1.0);
+    Cell<real> cell1(pt2, 2.0, 1.0, 0);
     std::cout<<"Center: (4.0, 5.5), dx = 2.0, dy = 1.0 vs "<<cell1<<std::endl;
 
 
@@ -164,8 +164,8 @@ int main () {
 
     // Testing constructor
     std::cout<<"(-) Testing constructor"<<std::endl;
-    QuadTree<real> my_tree1(10.0, 20.0, 1.0, 7.0);
-    QuadTree<real> my_tree2(10.0, 20.0, 4.0, 7.0);
+    QuadTree<real> my_tree1(Point<real>(0.0, 0.0), 10.0, 20.0, 1.0, 7.0);
+    QuadTree<real> my_tree2(Point<real>(0.0, 0.0), 10.0, 20.0, 4.0, 7.0);
 
     // Testing builduniform()
     std::cout<<"(-) Testing builduniform()"<<std::endl;
@@ -192,11 +192,9 @@ int main () {
 
     std::cout<<"We will print a lot of points..."<<std::endl;
     std::vector<Point<real>> centers_1 = my_tree1.getCenters();
-    std::vector<std::shared_ptr<Cell<real>>> leaves_1 = my_tree1.getLeaves();
 
-    for (unsigned int i = 0; i < leaves_1.size(); i++)   {
+    for (unsigned int i = 0; i < centers_1.size(); i++)   {
         std::cout<<centers_1[i]<<std::endl;
-        std::cout<<*leaves_1[i]<<std::endl;
     }
 
     // Testing refinement
@@ -257,7 +255,7 @@ int main () {
     }
     };
     
-    QuadTree<real> my_tree_mandelbrot(3.0, 2.0, 1, 7.0);
+    QuadTree<real> my_tree_mandelbrot(Point<real>(0.0, 0.0), 3.0, 2.0, 1, 7.0);
     my_tree_mandelbrot.buildUniform(6);
     MandelbrotCriterion md_crit;
 
@@ -267,7 +265,7 @@ int main () {
     // it has maximal level.
 
     std::function<real(std::shared_ptr<Cell<real>>)> mb_set_indicator_function = [&](std::shared_ptr<Cell<real>> cl) { 
-        if (my_tree_mandelbrot.getLevel(cl) >= 7.0)
+        if (cl->getLevel() >= 7.0)
             return 1.0;
         else
             return 0.0;    
@@ -305,7 +303,7 @@ int main () {
     };
 
 
-    QuadTree<real> my_tree_level_set(1.0, 1.0, 1, 7.0);
+    QuadTree<real> my_tree_level_set(Point<real>(0.0, 0.0), 1.0, 1.0, 1, 7.0);
     my_tree_level_set.buildUniform(3);
     MyTimeVaryingLevelSet ls_crit(1.2);
 

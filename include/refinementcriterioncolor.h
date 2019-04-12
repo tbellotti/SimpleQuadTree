@@ -6,6 +6,7 @@
 #include "pixel.h"
 #include "cellwithfather.h"
 
+/*
 template <typename T>
 class RefinementCriterionColor
 {
@@ -27,6 +28,7 @@ public:
             return false;
     }    
 };
+*/
 
 template <typename T>
 class CriterionVariance

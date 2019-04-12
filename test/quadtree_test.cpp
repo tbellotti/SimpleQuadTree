@@ -68,9 +68,10 @@ public:
 int main () 
 {
 
-    QuadTree<double> my_tree(1.0, 1.0, 1, 7);
+    QuadTree<double> my_tree(Point<double>(0.0, 0.0), 1.0, 1.0, 1, 8);
     
     my_tree.buildUniform(3);
+
 
     LevelSet<double> my_level_set(1.2);
     TestCriterion<double> my_criterion;
@@ -79,17 +80,23 @@ int main ()
     my_tree.updateWithLevelSet(my_level_set);
     //my_tree.updateQuadTree(my_criterion);
 
-    my_tree.exportMeshTikz(std::string("./media/draw1.tex"));
     my_tree.exportCentersTikz(std::string("./media/draw2.tex"));
+
+    my_tree.exportMeshTikz(std::string("./media/draw1.tex"));
+
+    my_tree.exportMeshTikzColor(std::string("./media/draw3.tex"));
 
 
 
     std::function<double(Point<double>)> to_integrate = [](Point<double> pt) { 
-        return pow(pt.getX(), 2.0) + 2.0*pow(pt.getY(), 2.0) + pt.getX()*pt.getY();
+        //return pow(pt.getX(), 2.0) + 2.0*pow(pt.getY(), 2.0) + pt.getX()*pt.getY();
+        //return pow(pt.getX(), 2.0) + 2.0*pow(pt.getY(), 2.0);
+        return exp(-pow(pt.getX()-0.5, 2.0)-pow(pt.getY()-0.5, 2.0));
     };
 
     std::cout<<"Integral = "<<my_tree.simpleIntegration(to_integrate)<<std::endl;
 
+    std::cout<<"Integral with 3rd order Gaussian = "<<my_tree.thirdOrderGaussianIntegration(to_integrate)<<std::endl;
     return 0;
 }
 

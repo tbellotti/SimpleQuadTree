@@ -117,7 +117,7 @@ std::tuple<unsigned int, unsigned int, std::vector<RGBColor>> parsePBM(const std
 
 std::ostream & operator<<(std::ostream & os, const RGBColor & color)
 {
-    os<<"Red = "<<color.getRed()<<", Green = "<<color.getGreen()<<", Blue = "<<color.getBlue();
+    os<<color.getRed()<<", "<<color.getGreen()<<", "<<color.getBlue();
     return os;
 }
 
@@ -169,6 +169,31 @@ RGBColor operator* (double factor, const RGBColor & rhs)
                     (unsigned short int)(factor * rhs.getBlue()));
 }
 
+std::vector<RGBColor> rainbowOfColors(size_t number_of_colors)
+{
+    std::vector<RGBColor> rainbow;
+    unsigned int current = 0;
+    unsigned int step = floor((255*4)/number_of_colors);
+
+    while (number_of_colors > 0)    {
+        if (current < 256)  {
+            rainbow.push_back(RGBColor(255, 0, current));
+        }
+        if (current >= 256 && current < 256*2)  {
+            rainbow.push_back(RGBColor(255-current%255, 0, 255));
+        }
+        if (current >= 256*2 && current < 256*3)  {
+            rainbow.push_back(RGBColor(0, current%255, 255));
+        }
+        if (current >= 256*3 && current < 256*4)  {
+            rainbow.push_back(RGBColor(0, 255, 255-current%255));
+        }
+        number_of_colors--;
+        current += step;
+    }
+
+    return rainbow;
+}
 
 
 
