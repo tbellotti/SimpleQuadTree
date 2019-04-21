@@ -21,19 +21,14 @@ protected:
 
 public:
     // Constructors and destructor
-    Point() = default; 
+    Point() : x_coord(T(0.0)), y_coord(T(0.0)) {} 
     Point(T x, T y) : x_coord(x), y_coord(y) {}
-    explicit Point(T x) : x_coord(x), y_coord(x) {}
-    Point(const Point & pt) : x_coord(pt.x_coord), y_coord(pt.y_coord) {}
+    //explicit Point(T x) : x_coord(x), y_coord(x) {}
+    // We do not want it to be explicit. Can be used for cast
+    Point(T x) : x_coord(x), y_coord(x) {}
+    // Not necessary to implement.
+    //Point(const Point & pt) : x_coord(pt.x_coord), y_coord(pt.y_coord) {}
     virtual ~Point() = default;
-
-    // Copy assignment operator
-    Point & operator=(const Point & rhs)
-    {
-        x_coord = rhs.x_coord;
-        y_coord = rhs.y_coord;
-        return *this;
-    }
 
     // Getters
     T getX() const { return x_coord; }
@@ -87,4 +82,3 @@ Point<T> operator+ (const Point<T> & lhs, const Point<T> & rhs)
 }
 
 #endif
-

@@ -1,6 +1,7 @@
 Thing to remind to tell during the discussion:
 - The recursive way is for sure not the most efficient way to deal with large quadtree and to find neighbors etc, but it is for sure the most natural and easiest one to implement for a first implementation. Anyway one can think about changing the implementation without touching the interface... or almost.
 
+- Building a link like that of inheritance between QUadTree and Image (even both inheriting from the same father) makes in my opinion things more difficult than the advantage it gives in terms of less ligns of code. May be some of them, but no too much, since the tree classes are quite small.
 
 1. Check const and stuff like that for all the classes
 - point.h [DONE]
