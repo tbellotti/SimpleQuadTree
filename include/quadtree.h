@@ -48,7 +48,7 @@ protected:
     }
 
 public:
-    QuadTree(Point<T> base_point, T xsize, T ysize, unsigned int minl, unsigned int maxl) : 
+    QuadTree(Point<T> base_point, T xsize, T ysize, unsigned char minl, unsigned char maxl) : 
             x_size(xsize), y_size(ysize), min_level(minl), max_level(maxl), 
             parent_cell(new Cell<T>(base_point, xsize, ysize, 0)) {}
 
@@ -56,14 +56,17 @@ public:
 
     // Some functions to recover parameters of
     // the tree
-    unsigned char getMinLevel() const
+    unsigned int getMinLevel() const
     {
-        return min_level;
+        // We cast to int because it is better for printing,
+        // since the reason why we store char is just for a matter
+        // of memory consumption.
+        return static_cast<unsigned int>(min_level);
     }
 
-    unsigned char getMaxLevel() const
+    unsigned int getMaxLevel() const
     {
-        return max_level;
+        return static_cast<unsigned int>(max_level);
     }
 
     size_t numberOfLeaves() const
@@ -82,11 +85,17 @@ public:
 
     // I cannot resume the previous function and this in the second
     // with a default argument because min_level is not static.
-    void buildUniform(const unsigned int lev)
+    void buildUniform(const unsigned char lev)
     {
-        clear();  // In this way, we do not have to assume to start from an empty grid
-        RefineAlwaysCriterion<T> criterion;
-        updateQuadTree(criterion, min_level, lev);
+
+        if (lev > max_level || lev < min_level)   {
+            throw std::invalid_argument("Trying to build the mesh outside the range [min_level, max_level].");
+        }
+        else    {
+            clear();  // In this way, we do not have to assume to start from an empty grid
+            RefineAlwaysCriterion<T> criterion;
+            updateQuadTree(criterion, min_level, lev);
+        }
     }
 
     void clear()
@@ -153,22 +162,24 @@ public:
 
     }
 
-    void exportMeshTikz(const std::string & filename) const
+    void exportMeshTikz(const std::string & filename, bool color) const
     {
+
+        std::vector<RGBColor> palette = rainbowOfColors(size_t(max_level-min_level+1));
+
         std::ofstream output_f;
         output_f.open (filename);
         output_f<<beginTikzFigure();
 
         std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
         for (std::shared_ptr<Cell<T>> leaf : leaves)    {
-            /*
-            std::vector<Point<T>> vertices = leaf->getVertices();
-            output_f<<"\\draw [ultra thin]"<<vertices[0]<<" -- "<<vertices[1]<<"; \n";
-            output_f<<"\\draw [ultra thin]"<<vertices[1]<<" -- "<<vertices[2]<<"; \n";
-            output_f<<"\\draw [ultra thin]"<<vertices[2]<<" -- "<<vertices[3]<<"; \n";
-            output_f<<"\\draw [ultra thin]"<<vertices[3]<<" -- "<<vertices[0]<<"; \n";
-            */
-            output_f<<leaf->tikzSquare();
+            if (color)  {
+                RGBColor curr_color = palette[size_t(leaf->getLevel()-min_level)];
+                output_f<<leaf->tikzSquare(curr_color, true);
+            }
+            else    {
+                output_f<<leaf->tikzSquare(RGBColor(255, 255, 255), true);
+            }
         }
 
         output_f<<endTikzFigure();
@@ -176,28 +187,6 @@ public:
     }
 
 
-
-    void exportMeshTikzColor(const std::string & filename) const
-    {
-
-        std::vector<RGBColor> palette = rainbowOfColors(max_level-min_level+1);
-
-        std::ofstream output_f;
-        output_f.open (filename);
-        output_f<<beginTikzFigure();
-        std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
-        for (std::shared_ptr<Cell<T>> leaf : leaves)    {
-            RGBColor curr_color = palette[leaf->getLevel()-min_level];
-            output_f<<leaf->tikzSquare(curr_color);
-        }
-        output_f<<endTikzFigure();
-        output_f.close();
-    }
-
-
-    // Simple sequential integration taking a function 
-    // as being constant on each cell with the value at the cell
-    // center
     T simpleIntegration(const std::function<T(Point<T>)> & f) const
     {
 
@@ -222,6 +211,7 @@ public:
     }
 
     // This can integrate taking features of the cell into account.
+    // to be integrated in the cell, for example, its level.
     T simpleIntegration(const std::function<T(std::shared_ptr<Cell<T>>)> & f) const
     {
         T integral = 0.0;
@@ -230,29 +220,10 @@ public:
         for (auto leaf : leaves)    {
             integral += f(leaf)*leaf->cellSurface();
         }
-        
         return integral;
     }
 
 };
-
-// An helper function to perform a recursive splitting
-template <typename T>
-void splitHelp(std::shared_ptr<Cell<T>> cell, unsigned int level_to_go) {
-    if (level_to_go > 0)    {
-        cell->splitCell();
-
-        std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-        splitHelp(children_vector[0], level_to_go - 1);
-        splitHelp(children_vector[1], level_to_go - 1);
-        splitHelp(children_vector[2], level_to_go - 1);
-        splitHelp(children_vector[3], level_to_go - 1);
-    }
-}
-
-
-
 
 #endif
 

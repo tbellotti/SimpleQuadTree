@@ -1,0 +1,56 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <functional>
+#include <algorithm>
+#include <cmath>
+#include <math.h>
+
+#include "../include/quadtree.h"
+#include "../include/lipschitzfunction.h"
+
+template <typename T>
+class LevelSet : public LipschitzFunction<T>
+{
+public:
+    LevelSet() : LipschitzFunction<T>() {}
+    LevelSet(T lipschitz) : LipschitzFunction<T>(lipschitz) {}
+
+    T operator()(Point<T> arg) const override
+    {
+        return (sqrt(pow(arg.getX(), 2.0) + pow(arg.getY(), 2.0)) - 1.0);
+    }
+};
+
+std::function<double(Point<double>)> circle_indicator_function = [](Point<double> pt) { 
+        
+    if (pow(pt.getX(), 2.0) + pow(pt.getY(), 2.0) <= 1.0)   {
+        return 1.0;
+    }
+    else    {
+        return 0.0;
+    }
+};
+
+
+int main () 
+{
+
+    QuadTree<double> my_tree(Point<double>(-2.0, -2.0), 4.0, 4.0, 1, 8);
+    
+    my_tree.buildUniform(3);
+
+
+    LevelSet<double> my_level_set(1.2);
+
+    my_tree.updateWithLevelSet(my_level_set);
+
+    my_tree.exportMeshTikz(std::string("./media/test_draw.tex"), false);
+
+
+    std::cout<<"Integral error = "<<(my_tree.simpleIntegration(circle_indicator_function)-M_PI)/M_PI<<std::endl;
+
+    std::cout<<"Integral with 3rd order Gaussian = "<<(my_tree.thirdOrderGaussianIntegration(circle_indicator_function)-M_PI)/M_PI<<std::endl;
+    return 0;
+}
+

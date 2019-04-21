@@ -128,3 +128,13 @@ template <typename T>
             return (dp_dx<T>(pt, vc)*dq_dy<T>(pt, vc)-dq_dx<T>(pt, vc)*dp_dy<T>(pt, vc));
         };
 }
+
+
+bool isPowerOf(long long int n, int base) 
+{ 
+    /* calculate log8(n) */
+    double i = log(double (n)) / log(base); 
+  
+    /* check if i is an integer or not */
+    return (i - trunc(i) < 0.000001);
+} 

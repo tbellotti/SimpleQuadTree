@@ -52,10 +52,40 @@ protected:
      -----------
     */
 
+    // Think where to put it...
+    /*
+    bool simplifyCellHelp(const RefinementCriterion<T> & criterion, const unsigned char min_lev)
+    {
+        if (!isLeaf())  {
+            if (getLevel() >= min_lev &&
+                 l_l->isLeaf() && l_r->isLeaf() && u_l->isLeaf() && u_r->isLeaf())  {
+                
+                if (!criterion(this->shared_from_this()))   {
+                    mergeCell();
+                    return true;
+                }
+                else    {
+                    return false;
+                }
+                
+            }
+            else    {
+                return l_l->simplifyCellHelp(criterion, min_lev) ||
+                       l_r->simplifyCellHelp(criterion, min_lev) ||
+                       u_l->simplifyCellHelp(criterion, min_lev) ||
+                       u_r->simplifyCellHelp(criterion, min_lev); 
+            }
+        } 
+        else    {
+            return false;
+        }   
+    }
+*/
+
 public:
 
     // Constructors and destructor
-    Cell(Point<T> b_p, T new_dx, T new_dy, unsigned short lv) : base_point(b_p), dx(new_dx), dy(new_dy), level(lv) {} 
+    Cell(Point<T> b_p, T new_dx, T new_dy, unsigned char lv) : base_point(b_p), dx(new_dx), dy(new_dy), level(lv) {} 
     virtual ~Cell() = default;
 
     Point<T> getBasePoint() const
@@ -87,13 +117,13 @@ public:
     {
         if (isLeaf())    {
             // Lower Left son
-            l_l = std::shared_ptr<Cell<T>>(new Cell<T>(base_point, 0.5*dx, 0.5*dy, level+1));
+            l_l = std::shared_ptr<Cell<T>>(new Cell<T>(base_point, 0.5*dx, 0.5*dy, static_cast<unsigned char>(level+1)));
             // Lower right son
-            l_r = std::shared_ptr<Cell<T>>(new Cell<T>(base_point + Point<T>(0.5*dx, 0.0), 0.5*dx, 0.5*dy, level+1));
+            l_r = std::shared_ptr<Cell<T>>(new Cell<T>(base_point + Point<T>(0.5*dx, 0.0), 0.5*dx, 0.5*dy, static_cast<unsigned char>(level+1)));
             // Upper left son
-            u_l = std::shared_ptr<Cell<T>>(new Cell<T>(base_point + Point<T>(0.0, 0.5*dy), 0.5*dx, 0.5*dy, level+1));
+            u_l = std::shared_ptr<Cell<T>>(new Cell<T>(base_point + Point<T>(0.0, 0.5*dy), 0.5*dx, 0.5*dy, static_cast<unsigned char>(level+1)));
             // Upper right son
-            u_r = std::shared_ptr<Cell<T>>(new Cell<T>(getCenter(), 0.5*dx, 0.5*dy, level+1));
+            u_r = std::shared_ptr<Cell<T>>(new Cell<T>(getCenter(), 0.5*dx, 0.5*dy, static_cast<unsigned char>(level+1)));
         }
     }
 
@@ -127,11 +157,25 @@ public:
 
     void simplifyCell(const RefinementCriterion<T> & criterion, const unsigned char min_lev)
     {
+        bool updated = true;
+        while (updated) {
+            updated = false;
+            std::vector<std::shared_ptr<Cell<T>>> pre_leaves;
+            getPreLeaves(pre_leaves);
+            for (auto pl : pre_leaves)  {
+                if (!criterion(pl) && pl->getLevel() >= min_lev) {
+                    pl->mergeCell();
+                    updated = true;
+                }
+            }
+
+        }
+        /*
         bool something_changed = true;
 
         while (something_changed)   {
             something_changed = simplifyCellHelp(criterion, min_lev);
-        }
+        }*/
     }
 
     void updateCell(const RefinementCriterion<T> & criterion, const unsigned char min_lev, const unsigned char max_lev)   
@@ -139,29 +183,6 @@ public:
         refineCell(criterion, max_lev);
         simplifyCell(criterion, min_lev);
     }
-
-    // Think where to put it...
-    bool simplifyCellHelp(const RefinementCriterion<T> & criterion, const unsigned char min_lev)
-    {
-        if (!isLeaf())  {
-            if (getLevel() >= min_lev && l_l->isLeaf() && l_r->isLeaf() && u_l->isLeaf() && u_r->isLeaf() 
-                && !criterion(this->shared_from_this()))   {
-                
-                mergeCell();
-                return true;
-            }
-            else    {
-                return l_l->simplifyCellHelp(criterion, min_lev) ||
-                       l_r->simplifyCellHelp(criterion, min_lev) ||
-                       u_l->simplifyCellHelp(criterion, min_lev) ||
-                       u_r->simplifyCellHelp(criterion, min_lev); 
-            }
-        } 
-        else    {
-            return false;
-        }   
-    }
-
 
     // For classes inheriting from Cell, these pointers must
     // be cast into the right type.
@@ -202,7 +223,7 @@ public:
     // This cannot be const because we put non-constant shared
     // pointers in the vector in order them to be useful
     // to eventually modify the objects they point to.
-    void getLeaves(std::vector<std::shared_ptr<Cell<T>>> & to_fill)
+    void getLeaves(std::vector<std::shared_ptr<Cell<T>>> & to_fill)// const
     {
         if (isLeaf())   {
             to_fill.push_back(this->shared_from_this());
@@ -216,31 +237,49 @@ public:
         }
     }
 
-    std::vector<std::shared_ptr<Cell<T>>> getPreLeaves()
+
+    void getPreLeaves(std::vector<std::shared_ptr<Cell<T>>> & to_fill)   
     {
-        std::vector<std::shared_ptr<Cell<T>>> to_fill;
-        getPreLeavesHelp(this->shared_from_this(), to_fill);
-        return to_fill;
-    
+
+        if (l_l->isLeaf() && l_r->isLeaf() && u_l->isLeaf() && u_r->isLeaf())   {
+            to_fill.push_back(this->shared_from_this());
+        }
+        else    {
+            if (!l_l->isLeaf()) 
+                l_l->getPreLeaves(to_fill);
+
+            if (!l_r->isLeaf()) 
+                l_r->getPreLeaves(to_fill);
+
+            if (!u_l->isLeaf()) 
+                u_l->getPreLeaves(to_fill);
+
+            if (!u_r->isLeaf()) 
+                u_r->getPreLeaves(to_fill);
+        }
+
     }
 
-    std::string tikzDot(const RGBColor color = RGBColor(0, 0, 255)) const
+    std::string tikzDot() const
     {
         std::stringstream string_stream;
         string_stream<<"\\draw [fill=blue, line width = 0.1pt]"<<getCenter()<<" circle[radius= 0.5pt]; \n";
         return string_stream.str();
     }
 
-    std::string tikzSquare(const RGBColor color = RGBColor(255, 255, 255)) const
+    std::string tikzSquare(const RGBColor color = RGBColor(255, 255, 255), const bool outerline = false) const
     {
         std::vector<Point<T>> vertices = getVertices();
         std::stringstream string_stream;
-        string_stream<<"\n \\fill [rgb color={"<<color<<"}]"<<vertices[0]<<" rectangle "<<vertices[2]<<"; \n";
-        string_stream<<"\\draw [line width = 0.0]"<<vertices[0]<<" -- "<<vertices[1]<<"; \n";
-        string_stream<<"\\draw [line width = 0.0]"<<vertices[1]<<" -- "<<vertices[2]<<"; \n";
-        string_stream<<"\\draw [line width = 0.0]"<<vertices[2]<<" -- "<<vertices[3]<<"; \n";
-        string_stream<<"\\draw [line width = 0.0]"<<vertices[3]<<" -- "<<vertices[0]<<"; \n";
+        if (outerline)  {
+            string_stream<<"\\draw [line width = 0.0mm, fill={rgb, 255 : red, "<<int(color.getRed())<<"; green, "<<int(color.getGreen())<<"; blue, "<<int(color.getBlue())<<"}]"<<vertices[0]<<" rectangle "<<vertices[2]<<"; \n";
+        }
+        else    {
+            string_stream<<"\\fill [rgb color={"<<color<<"}]"<<vertices[0]<<" rectangle "<<vertices[2]<<"; \n";
+        }
+ 
         return string_stream.str();
+
     }
 
     T zeroOrderIntegration(const std::function<T(Point<T>)> & f) const
@@ -255,17 +294,14 @@ public:
         std::vector<T> xi = {-sqrt(3.0/5.0), 0.0, sqrt(3.0/5.0)};
 
         std::vector<Point<T>> vc = getVertices();
-
-        // We define the nodal shape functions to be eventually used.
         
         for (size_t i = 0; i < xi.size(); i++)  {
             for (size_t j = 0; j < xi.size(); j++)  {
                 Point<T> curr_point(xi[i], xi[j]);
-                //std::cout<<gaussian::dn2_dy<T>(curr_point)<<std::endl;
                 integral += w[i]*w[j]*f(Point<T>(gaussian::p<T>(curr_point, vc), gaussian::q<T>(curr_point, vc))) * std::abs(gaussian::Jacob<T>(curr_point, vc));
-                //integral += w[i]*w[j]*f(Point<T>(gaussian::n1<T>(curr_point), gaussian::Jacob<T>(curr_point, vc)));
             }
         }
+        return integral;
     }
 
 };
@@ -278,52 +314,6 @@ std::ostream & operator<<(std::ostream & os, const Cell<T> & cl)
     return os;
 }
 
-template <typename T>
-void getPreLeavesHelp(std::shared_ptr<Cell<T>> cell, std::vector<std::shared_ptr<Cell<T>>> & to_fill) 
-{
-    /*
-    if (cell->isLeaf())
-    {
-        to_fill.push_back(nullptr);
-        return;
-    }
-    */
-    std::vector<std::shared_ptr<Cell<T>>> children_vector = cell->getChildren();
-
-
-    // Before it was, without considering that there are
-    // branches with some children which are leaves and some which
-    // are not, yielding some possible rough simplifications
-    /*
-    if (children_vector[0]->isLeaf() || children_vector[1]->isLeaf()
-        || children_vector[2]->isLeaf() || children_vector[3]->isLeaf())    {
-        to_fill.push_back(cell);
-        return;
-    }
-    else    {
-        
-        getPreLeavesHelp(children_vector[0], to_fill);
-        getPreLeavesHelp(children_vector[1], to_fill);
-        getPreLeavesHelp(children_vector[2], to_fill);
-        getPreLeavesHelp(children_vector[3], to_fill);
-    }
-
-    */
-
-    if (children_vector[0]->isLeaf() && children_vector[1]->isLeaf()
-        && children_vector[2]->isLeaf() && children_vector[3]->isLeaf())    {
-        to_fill.push_back(cell);
-    }
-    if (!children_vector[0]->isLeaf())
-        getPreLeavesHelp(children_vector[0], to_fill);
-    if (!children_vector[1]->isLeaf())
-        getPreLeavesHelp(children_vector[1], to_fill);
-    if (!children_vector[2]->isLeaf())
-        getPreLeavesHelp(children_vector[2], to_fill);
-    if (!children_vector[3]->isLeaf())
-        getPreLeavesHelp(children_vector[3], to_fill);
-
-}
 
 #endif
 

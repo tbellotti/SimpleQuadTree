@@ -3,7 +3,6 @@
 
 #include "point.h"
 
-
 template <typename T>
 class LipschitzFunction
 {
