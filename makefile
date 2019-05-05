@@ -1,4 +1,3 @@
-# THINK AT THE DEPENDENCIES: CELL MUST BE INCLUDED EVERYWHERE FOR EXAMPLE.
 CXXFLAGS += -Wall -std=c++14 \
    -Werror \
    -Wextra \
@@ -24,95 +23,108 @@ MPICOMP = mpicxx
 # Various folders in the project
 BINDIR = $(PWD)/bin
 BUILDDIR = $(PWD)/build
-HEADERDIR = $(PWD)/include
+HEADERDIR = $(PWD)/include # Not used.
 SRCDIR = $(PWD)/src
-TESTDIR = $(PWD)/test
 
 .PHONY : clean distclean
 
-HEADERS := $(HEADERDIR)/quadtree.h $(HEADERDIR)/cell.h $(HEADERDIR)/point.h $(HEADERDIR)/lipschitzfunction.h $(HEADERDIR)/refinementcriterion.h $(HEADERDIR)/levelsetcriterion.h $(HEADERDIR)/rgbcolor.h
-
-#SRC = $(TESTDIR)/quadtree_test.cpp $(TESTDIR)/test_everything.cpp
-
-#OBJ = $(BUILDDIR)/quadtree_test.o $(BUILDDIR)/test_everything.o
-
-#EXE = $(BINDIR)/quadtree_test $(BINDIR)/test_everything $(BINDIR)/split_parallel_tree_integration $(BINDIR)/circle_parallel_quadrature
-
-EXE = $(BINDIR)/test/basic_bricks $(BINDIR)/test/image_compression $(BINDIR)/test/quadtree_highly_adaptive_mesh $(BINDIR)/test/quadtree_other_meshes $(BINDIR)/test/quadtree_integration $(BINDIR)/imagecompression $(BINDIR)/test/quadtree_time_evolving_mesh $(BINDIR)/mpi_quadtree_pi
+# I have to put and update the two since I have a quite complicated way of structuring the 
+# folders, thus there is not always a correspondence between folder for the executables
+# and the objects/source files.
+EXE = $(BINDIR)/test/basic_bricks $(BINDIR)/test/image_compression $(BINDIR)/test/quadtree_highly_adaptive_mesh $(BINDIR)/test/quadtree_other_meshes $(BINDIR)/test/quadtree_integration $(BINDIR)/imagecompression $(BINDIR)/test/quadtree_time_evolving_mesh $(BINDIR)/test/mpi_pi $(BINDIR)/test/mpi_gauss $(BINDIR)/test/mpi_square $(BINDIR)/test/mpi_unif
+OBJ = $(BUILDDIR)/test/basic_bricks.o $(BUILDDIR)/test/image_compression.o $(BUILDDIR)/test/quadtree_highly_adaptive_mesh.o $(BUILDDIR)/test/quadtree_other_meshes.o $(BUILDDIR)/test/quadtree_integration.o $(BUILDDIR)/main/imagecompression.o $(BUILDDIR)/test/quadtree_time_evolving_mesh.o $(BUILDDIR)/test/mpi_pi.o $(BUILDDIR)/test/mpi_gauss.o $(BUILDDIR)/test/mpi_square.o $(BUILDDIR)/test/mpi_unif.o
 
 all : $(EXE)
 
+# To have automatic dependencies
+-include $(OBJ:.o=.d)
+
+
+# === Setting general rules, which must be take the fact that we 
+# have several subdirectories into account === 
+
+# To compile files like src/*.cpp
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
+	$(CXX) -c -MP -MD $(CXXFLAGS) $< -o $@
+
+# To compile files like src/main/*.cpp
+$(BUILDDIR)/main/%.o: $(SRCDIR)/main/%.cpp
+	$(CXX) -c -MP -MD $(CXXFLAGS) $< -o $@
+
+# To compile files like src/test/*.cpp
+$(BUILDDIR)/test/%.o: $(SRCDIR)/test/%.cpp
+	$(CXX) -c -MP -MD $(CXXFLAGS) $< -o $@
+
+
+# === Compiling and linking ===
+
 # Compiling RGBCOLOR
-$(BUILDDIR)/rgbcolor.o : $(SRCDIR)/rgbcolor.cpp $(HEADERDIR)/matrix.h
-	$(CXX) $< -c $(CXXFLAGS) -o $@
+$(BUILDDIR)/rgbcolor.o : $(SRCDIR)/rgbcolor.cpp
 
-# Compiling the BASIC_BRICKS example
-
-$(BUILDDIR)/basic_bricks.o : $(SRCDIR)/test/basic_bricks.cpp $(HEADERDIR)/point.h $(HEADERDIR)/rgbcolor.h $(HEADERDIR)/matrix.h
-	$(CXX) $< -c $(CXXFLAGS) -o $@
-
-$(BINDIR)/test/basic_bricks : $(BUILDDIR)/basic_bricks.o $(BUILDDIR)/rgbcolor.o 
+# Compiling and linking the BASIC_BRICKS example
+$(BUILDDIR)/test/basic_bricks.o : $(SRCDIR)/test/basic_bricks.cpp 
+$(BINDIR)/test/basic_bricks : $(BUILDDIR)/test/basic_bricks.o $(BUILDDIR)/rgbcolor.o 
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
-# Compiling the IMAGE_COMPRESSION example
-
-$(BUILDDIR)/image_compression.o : $(SRCDIR)/test/image_compression.cpp $(HEADERDIR)/image.h 
-	$(CXX) $< -c $(CXXFLAGS) -o $@
-
-$(BINDIR)/test/image_compression : $(BUILDDIR)/image_compression.o $(BUILDDIR)/rgbcolor.o 
+# Compiling and linking the IMAGE_COMPRESSION example
+$(BUILDDIR)/test/image_compression.o : $(SRCDIR)/test/image_compression.cpp
+$(BINDIR)/test/image_compression : $(BUILDDIR)/test/image_compression.o $(BUILDDIR)/rgbcolor.o 
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
-# Compiling the QUADTREE_HIGHLY_ADAPTIVE_MESH example
-
-$(BUILDDIR)/quadtree_highly_adaptive_mesh.o : $(SRCDIR)/test/quadtree_highly_adaptive_mesh.cpp $(HEADERDIR)/quadtree.h 
-	$(CXX) $< -c $(CXXFLAGS) -o $@
-
-$(BINDIR)/test/quadtree_highly_adaptive_mesh : $(BUILDDIR)/quadtree_highly_adaptive_mesh.o $(BUILDDIR)/rgbcolor.o 
+# Compiling and linking the QUADTREE_HIGHLY_ADAPTIVE_MESH example
+$(BUILDDIR)/test/quadtree_highly_adaptive_mesh.o : $(SRCDIR)/test/quadtree_highly_adaptive_mesh.cpp 
+$(BINDIR)/test/quadtree_highly_adaptive_mesh : $(BUILDDIR)/test/quadtree_highly_adaptive_mesh.o $(BUILDDIR)/rgbcolor.o 
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
-# Compiling the QUADTREE_OTHER_MESHES example
-
-$(BUILDDIR)/quadtree_other_meshes.o : $(SRCDIR)/test/quadtree_other_meshes.cpp $(HEADERDIR)/quadtree.h
-	$(CXX) $< -c $(CXXFLAGS) -o $@
-
-$(BINDIR)/test/quadtree_other_meshes : $(BUILDDIR)/quadtree_other_meshes.o $(BUILDDIR)/rgbcolor.o 
+# Compiling and linking the QUADTREE_OTHER_MESHES example
+$(BUILDDIR)/test/quadtree_other_meshes.o : $(SRCDIR)/test/quadtree_other_meshes.cpp
+$(BINDIR)/test/quadtree_other_meshes : $(BUILDDIR)/test/quadtree_other_meshes.o $(BUILDDIR)/rgbcolor.o 
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
-
-# Compiling the QUADTREE_INTEGRATION example
-
-$(BUILDDIR)/quadtree_integration.o : $(SRCDIR)/test/quadtree_integration.cpp $(HEADERDIR)/quadtree.h 
-	$(CXX) $< -c $(CXXFLAGS) -o $@
-
-$(BINDIR)/test/quadtree_integration : $(BUILDDIR)/quadtree_integration.o $(BUILDDIR)/rgbcolor.o 
+# Compiling and linking the QUADTREE_INTEGRATION example
+$(BUILDDIR)/test/quadtree_integration.o : $(SRCDIR)/test/quadtree_integration.cpp
+$(BINDIR)/test/quadtree_integration : $(BUILDDIR)/test/quadtree_integration.o $(BUILDDIR)/rgbcolor.o 
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
-# Compiling the IMAGECOMPRESSION program
-$(BUILDDIR)/imagecompression.o : $(SRCDIR)/main/imagecompression.cpp $(HEADERDIR)/image.h 
-	$(CXX) $< -c $(CXXFLAGS) -o $@
-
-$(BINDIR)/imagecompression : $(BUILDDIR)/imagecompression.o $(BUILDDIR)/rgbcolor.o 
+# Compiling and linking the IMAGECOMPRESSION program
+$(BUILDDIR)/main/imagecompression.o : $(SRCDIR)/main/imagecompression.cpp 
+$(BINDIR)/imagecompression : $(BUILDDIR)/main/imagecompression.o $(BUILDDIR)/rgbcolor.o 
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
-
-# Compiling the quadtree_time_evolving_mesh test
-$(BUILDDIR)/quadtree_time_evolving_mesh.o : $(SRCDIR)/test/quadtree_time_evolving_mesh.cpp $(HEADERDIR)/quadtree.h 
-	$(CXX) $< -c $(CXXFLAGS) -o $@
-
-$(BINDIR)/test/quadtree_time_evolving_mesh : $(BUILDDIR)/quadtree_time_evolving_mesh.o $(BUILDDIR)/rgbcolor.o 
+# Compiling and linking the quadtree_time_evolving_mesh test
+$(BUILDDIR)/test/quadtree_time_evolving_mesh.o : $(SRCDIR)/test/quadtree_time_evolving_mesh.cpp
+$(BINDIR)/test/quadtree_time_evolving_mesh : $(BUILDDIR)/test/quadtree_time_evolving_mesh.o $(BUILDDIR)/rgbcolor.o 
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
-# Compiling the MPI_QUADTREE_PI program
-$(BUILDDIR)/mpi_quadtree_pi.o : $(SRCDIR)/main/imagecompression.cpp $(HEADERDIR)/image.h 
-	$(CXX) $< -c $(CXXFLAGS) -o $@
-
-$(BINDIR)/mpi_quadtree_pi : $(SRCDIR)/main/mpi_quadtree_pi.cpp $(BUILDDIR)/rgbcolor.o 
-	mpicxx $^ -o $@
 # I cannot use the flag suggested because they generate too many errors
 # with the MPI implementation I use.
 
+# Compiling and linking the MPI_PI test
+$(BUILDDIR)/test/mpi_pi.o : $(SRCDIR)/test/mpi_pi.cpp
+	mpicxx -c -MP -MD $< -o $@
+$(BINDIR)/test/mpi_pi : $(BUILDDIR)/test/mpi_pi.o $(BUILDDIR)/rgbcolor.o 
+	mpicxx $^  -o $@
+
+# Compiling and linking the MPI_GAUSS test
+$(BUILDDIR)/test/mpi_gauss.o : $(SRCDIR)/test/mpi_gauss.cpp
+	mpicxx -c -MP -MD $< -o $@
+$(BINDIR)/test/mpi_gauss : $(BUILDDIR)/test/mpi_gauss.o $(BUILDDIR)/rgbcolor.o 
+	mpicxx $^  -o $@
+
+# Compiling and linking the MPI_SQUARE test
+$(BUILDDIR)/test/mpi_square.o : $(SRCDIR)/test/mpi_square.cpp
+	mpicxx -c -MP -MD $< -o $@
+$(BINDIR)/test/mpi_square : $(BUILDDIR)/test/mpi_square.o $(BUILDDIR)/rgbcolor.o 
+	mpicxx $^  -o $@
+
+# Compiling and linking the MPI_UNIF test
+$(BUILDDIR)/test/mpi_unif.o : $(SRCDIR)/test/mpi_unif.cpp
+	mpicxx -c -MP -MD $< -o $@
+$(BINDIR)/test/mpi_unif : $(BUILDDIR)/test/mpi_unif.o $(BUILDDIR)/rgbcolor.o 
+	mpicxx $^  -o $@
+
 clean : 
-	$(RM) -rf $(BUILDDIR)/*.o
+	$(RM) -rf $(OBJ) $(OBJ:.o=.d)
 
 distclean : clean
 	$(RM) -rf $(EXE)

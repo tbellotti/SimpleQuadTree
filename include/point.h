@@ -20,23 +20,35 @@ protected:
     T y_coord = T(0.0);
 
 public:
-    // Constructors and destructor
     Point() : x_coord(T(0.0)), y_coord(T(0.0)) {} 
+
     Point(T x, T y) : x_coord(x), y_coord(y) {}
+
     //explicit Point(T x) : x_coord(x), y_coord(x) {}
     // We do not want it to be explicit. Can be used for cast
     Point(T x) : x_coord(x), y_coord(x) {}
-    // Not necessary to implement.
-    //Point(const Point & pt) : x_coord(pt.x_coord), y_coord(pt.y_coord) {}
+
     virtual ~Point() = default;
 
-    // Getters
-    T getX() const { return x_coord; }
-    T getY() const { return y_coord; }
+    T getX() const 
+    {
+        return x_coord;
+    }
 
-    // Setters 
-    void setX(T x) { x_coord = x; }
-    void setY(T y) { y_coord = y; }
+    T getY() const 
+    { 
+        return y_coord; 
+    }
+
+    void setX(T x) 
+    { 
+        x_coord = x; 
+    }
+
+    void setY(T y) 
+    { 
+        y_coord = y; 
+    }
 
     // Print (for debugging purpose)
     std::string print() const

@@ -1,8 +1,6 @@
 #ifndef QUADTREE_H
 #define QUADTREE_H
 
-
-// !!! Update all the dependencies in the makefile...
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -11,12 +9,8 @@
 #include <stdexcept>
 #include <algorithm>
 #include "cell.h"
-#include "lipschitzfunction.h"
-#include "refinementcriterion.h"
-#include "levelsetcriterion.h"
-#include "refinealwayscriterion.h"
+#include "refinementcriteria.h"
 #include "rgbcolor.h"
-//#include "useful.h"
 
 /*
 This class implements the notion of 
@@ -35,9 +29,11 @@ protected:
     const T y_size; // Size along y
     const unsigned char min_level;   // Minimum level of splitting
     const unsigned char max_level;   // Maximum level of splitting
+    // It should not be const since it can be changed when resetting the whole tree
+    // to an empty one.
     std::shared_ptr<Cell<T>> parent_cell;   // Top of the tree.
 
-    // This is private (protected) because though the pointers to the leaves
+    // This is protected because though the pointers to the leaves
     // an external agent could modify the structure in an incoherent
     // way (for example violating the max and min levels).
     std::vector<std::shared_ptr<Cell<T>>> getLeaves() const
@@ -54,13 +50,13 @@ public:
 
     virtual ~QuadTree() = default;
 
-    // Some functions to recover parameters of
-    // the tree
     unsigned int getMinLevel() const
     {
-        // We cast to int because it is better for printing,
-        // since the reason why we store char is just for a matter
-        // of memory consumption.
+        // The conversion for the sake of printing, since we store the
+        // level as unsigned char just to be consistent in the project.
+        // This choice is important in the class Cell and Pixel, which
+        // is allocated in large number, thus memomory consumption matters.
+        // Here we do just to be consistent.
         return static_cast<unsigned int>(min_level);
     }
 
@@ -75,7 +71,6 @@ public:
         return leaves.size();
     }
 
-
     void buildUniform() 
     {
         clear();  // In this way, we do not have to assume to start from an empty grid
@@ -87,12 +82,11 @@ public:
     // with a default argument because min_level is not static.
     void buildUniform(const unsigned char lev)
     {
-
         if (lev > max_level || lev < min_level)   {
             throw std::invalid_argument("Trying to build the mesh outside the range [min_level, max_level].");
         }
         else    {
-            clear();  // In this way, we do not have to assume to start from an empty grid
+            clear();  
             RefineAlwaysCriterion<T> criterion;
             updateQuadTree(criterion, min_level, lev);
         }
@@ -101,25 +95,27 @@ public:
     void clear()
     {
         // We retrieve the base point in order to keep the same
-        Point<T> base_pt = parent_cell->getBasePoint();
+        Point<T> base_pt = parent_cell->getBasePoint(); // Notice that retrieving the base point is especially useful to
+                                                        // parallelize the tree.
         parent_cell = std::make_shared<Cell<T>>(Cell<T>(base_pt, x_size, y_size, 0));
     }
 
+    // Updates the tree using the special criterion involing the level-set function.
     void updateWithLevelSet(const LipschitzFunction<T> & level_set)
     {
         LevelSetCriterion<T> level_set_criterion(level_set); 
         updateQuadTree(level_set_criterion);
     }
 
-
-    // Should be implemented because min_level and max_level
-    // are not static thus cannot be used as default values for the
-    // other function.
+    // Updates the quadtree using a generic criterion.
     void updateQuadTree(const RefinementCriterion<T> & criterion)
     {
         updateQuadTree(criterion, min_level, max_level);
     }
 
+    // Should be implemented because min_level and max_level
+    // are not static thus cannot be used as default values for the
+    // other function. As before
     void updateQuadTree(const RefinementCriterion<T> & criterion, const unsigned char min_lv, const unsigned char max_lv)
     {
         if (min_lv < min_level || max_lv > max_level)   {
@@ -145,8 +141,8 @@ public:
         return to_return;
     }
 
-
-    // Used to export the plot of the mesh in a LaTeX file.
+    // Used to export the plot of the mesh in a LaTeX file, made up of 
+    // dots placed in the centers of the leaves.
     void exportCentersTikz(const std::string & filename) const
     {
         std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves(); 
@@ -155,16 +151,16 @@ public:
         output_f<<beginTikzFigure();
         for (auto leave : leaves)   {
             output_f<<leave->tikzDot();
-
         }
         output_f<<endTikzFigure();
         output_f.close();
-
     }
 
+    // The same but with the whole square indicating a Cell
+    // and the possibility to color the interior of each leaf according to its level.
     void exportMeshTikz(const std::string & filename, bool color) const
     {
-
+        // We recover a palette of color to differentiate between levels.
         std::vector<RGBColor> palette = rainbowOfColors(size_t(max_level-min_level+1));
 
         std::ofstream output_f;
@@ -173,11 +169,11 @@ public:
 
         std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
         for (std::shared_ptr<Cell<T>> leaf : leaves)    {
-            if (color)  {
+            if (color)  { // if we have to put colors
                 RGBColor curr_color = palette[size_t(leaf->getLevel()-min_level)];
                 output_f<<leaf->tikzSquare(curr_color, true);
             }
-            else    {
+            else    {   // We simply put white inside the cells. Just the boundary will be drawn.
                 output_f<<leaf->tikzSquare(RGBColor(255, 255, 255), true);
             }
         }
@@ -186,10 +182,9 @@ public:
         output_f.close();
     }
 
-
+    // Integration relying on the zeroOrderIntegration of the class Cell
     T simpleIntegration(const std::function<T(Point<T>)> & f) const
     {
-
         T integral = 0.0;
         std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
 
@@ -199,6 +194,7 @@ public:
         return integral;
     }
 
+    // Integration relying on the thirdOrderGaussianIntegration of the class Cell
     T thirdOrderGaussianIntegration(const std::function<T(Point<T>)> & f) const
     {
         T integral = 0.0;
@@ -211,13 +207,17 @@ public:
     }
 
     // This can integrate taking features of the cell into account.
-    // to be integrated in the cell, for example, its level.
+    // to be integrated in the cell, for example, its level. It does not 
+    // have a counterpart in the class Cell, for obvious reasons.  
+    // It allows us to construct certain fun examples such as measuring the area
+    // of the fractal known as Mandelbrot set.
     T simpleIntegration(const std::function<T(std::shared_ptr<Cell<T>>)> & f) const
     {
         T integral = 0.0;
         std::vector<std::shared_ptr<Cell<T>>> leaves = getLeaves();
 
         for (auto leaf : leaves)    {
+            // It is indeed the same than for zeroOrderIntegration in the class Cell.
             integral += f(leaf)*leaf->cellSurface();
         }
         return integral;
@@ -226,4 +226,3 @@ public:
 };
 
 #endif
-

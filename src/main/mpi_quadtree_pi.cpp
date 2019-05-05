@@ -34,6 +34,7 @@ std::function<double(Point<double>)> circle_indicator_function = [](Point<double
 };
 
 
+
 int main(int argc, char *argv[])
 {
 
@@ -140,8 +141,8 @@ int main(int argc, char *argv[])
     LevelSet<double> ls(1.2);
     loc_tree.updateWithLevelSet(ls);
 
-    std::ostringstream outputname;
-    outputname<<"./media/tree_core"<<rank<<".tex";
+    //std::ostringstream outputname;
+    //outputname<<"./tmp/tree_core"<<rank<<".tex";
     //loc_tree.exportMeshTikz(outputname.str(), false);
 
     double local_integral = loc_tree.thirdOrderGaussianIntegration(circle_indicator_function);
