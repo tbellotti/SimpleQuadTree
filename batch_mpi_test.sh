@@ -1,12 +1,12 @@
 #!/bin/bash
 
 minlev=3
-maxlev=10
+maxlev=11
 # More than 11 is maybe too much in terms of memory for a normal machine.
 mpiapp="/usr/bin/mpiexec.mpich"
 
 echo "||||| PI |||||" >> mpi_batch_test_output.txt
-for cores in 1 4
+for cores in 1 4 16
 do
 for int in 0 1 
 do
@@ -23,7 +23,7 @@ done
 
 
 echo "||||| GAUSSIAN |||||" >> mpi_batch_test_output.txt
-for cores in 1 4
+for cores in 1 4 16
 do
 for int in 0 1 
 do
@@ -40,7 +40,7 @@ done
 
 
 echo "||||| SQUARE |||||" >> mpi_batch_test_output.txt
-for cores in 1 4
+for cores in 1 4 16
 do
 for int in 0 1 
 do
@@ -57,7 +57,7 @@ done
 
 
 echo "||||| UNIFORM UP TO 16 |||||" >> mpi_batch_test_output.txt
-for cores in 1 4
+for cores in 1 4 16
 do
 for int in 0 1 
 do
