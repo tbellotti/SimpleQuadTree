@@ -1,0 +1,244 @@
+||||| PI |||||
+============ 1 | 3 | 10 | 0 | 1
+0- Pi is = 3.141662598
+0- The error on Pi is = 0.002226388783 %
+Core 0 Elapsed time = 1.624989033
+============
+============ 1 | 3 | 10 | 0 | 2
+0- Pi is = 3.070831299
+0- The error on Pi is = 2.252403878 %
+Core 0 Elapsed time = 1.621255875
+============
+============ 1 | 3 | 10 | 0 | 3
+0- Pi is = 3.141662598
+0- The error on Pi is = 0.002226388783 %
+Core 0 Elapsed time = 1.79627347
+============
+============ 1 | 3 | 10 | 1 | 1
+0- Pi is = 3.141628689
+0- The error on Pi is = 0.001147050248 %
+Core 0 Elapsed time = 1.930853844
+============
+============ 1 | 3 | 10 | 1 | 2
+0- Pi is = 3.155690888
+0- The error on Pi is = 0.4487607336 %
+Core 0 Elapsed time = 1.786772966
+============
+============ 1 | 3 | 10 | 1 | 3
+0- Pi is = 3.141628689
+0- The error on Pi is = 0.001147050248 %
+Core 0 Elapsed time = 18.25672579
+============
+============ 4 | 3 | 10 | 0 | 1
+0- Pi is = 3.141662598
+0- The error on Pi is = 0.002226388783 %
+Core 0 Elapsed time = 0.4245548248
+============
+============ 4 | 3 | 10 | 0 | 2
+0- Pi is = 3.070831299
+0- The error on Pi is = 2.252403878 %
+Core 0 Elapsed time = 0.4417126179
+============
+============ 4 | 3 | 10 | 0 | 3
+0- Pi is = 3.141662598
+0- The error on Pi is = 0.002226388783 %
+Core 0 Elapsed time = 0.4709050655
+============
+============ 4 | 3 | 10 | 1 | 1
+0- Pi is = 3.141628689
+0- The error on Pi is = 0.001147050248 %
+Core 0 Elapsed time = 0.4788815975
+============
+============ 4 | 3 | 10 | 1 | 2
+0- Pi is = 3.155690888
+0- The error on Pi is = 0.4487607336 %
+Core 0 Elapsed time = 0.4994418621
+============
+============ 4 | 3 | 10 | 1 | 3
+0- Pi is = 3.141628689
+0- The error on Pi is = 0.001147050248 %
+Core 0 Elapsed time = 4.687173128
+============
+||||| GAUSSIAN |||||
+============ 1 | 3 | 10 | 0 | 1
+0- Normalization is = 1
+0- The error on Normalization is = 6.539213615e-12 %
+Core 0 Elapsed time = 1.75410533
+============
+============ 1 | 3 | 10 | 0 | 2
+0- Normalization is = 0.500002606
+0- The error on Normalization is = 49.9997394 %
+Core 0 Elapsed time = 1.725622654
+============
+============ 1 | 3 | 10 | 0 | 3
+0- Normalization is = 1
+0- The error on Normalization is = 6.539213615e-12 %
+Core 0 Elapsed time = 1.89869833
+============
+============ 1 | 3 | 10 | 1 | 1
+0- Normalization is = 1
+0- The error on Normalization is = 4.363176487e-12 %
+Core 0 Elapsed time = 3.5132339
+============
+============ 1 | 3 | 10 | 1 | 2
+0- Normalization is = 1.10098637
+0- The error on Normalization is = 10.09863699 %
+Core 0 Elapsed time = 2.567013979
+============
+============ 1 | 3 | 10 | 1 | 3
+0- Normalization is = 1
+0- The error on Normalization is = 4.363176487e-12 %
+Core 0 Elapsed time = 18.44140792
+============
+============ 4 | 3 | 10 | 0 | 1
+0- Normalization is = 1
+0- The error on Normalization is = 1.543210004e-12 %
+Core 0 Elapsed time = 0.4540450573
+============
+============ 4 | 3 | 10 | 0 | 2
+0- Normalization is = 0.500002606
+0- The error on Normalization is = 49.9997394 %
+Core 0 Elapsed time = 0.4672048092
+============
+============ 4 | 3 | 10 | 0 | 3
+0- Normalization is = 1
+0- The error on Normalization is = 1.543210004e-12 %
+Core 0 Elapsed time = 0.4821820259
+============
+============ 4 | 3 | 10 | 1 | 1
+0- Normalization is = 1
+0- The error on Normalization is = 1.36557432e-12 %
+Core 0 Elapsed time = 0.8883867264
+============
+============ 4 | 3 | 10 | 1 | 2
+0- Normalization is = 1.10098637
+0- The error on Normalization is = 10.09863699 %
+Core 0 Elapsed time = 0.9189236164
+============
+============ 4 | 3 | 10 | 1 | 3
+0- Normalization is = 1
+0- The error on Normalization is = 1.36557432e-12 %
+Core 0 Elapsed time = 4.810959816
+============
+||||| SQUARE |||||
+============ 1 | 3 | 10 | 0 | 1
+0- Inertia moment is = 0.1872226101
+0- The error on Inertia moment is = 0.5984086328 %
+Core 0 Elapsed time = 1.614959955
+============
+============ 1 | 3 | 10 | 0 | 2
+0- Inertia moment is = 0.2327027655
+0- The error on Inertia moment is = 25.035795 %
+Core 0 Elapsed time = 1.644822836
+============
+============ 1 | 3 | 10 | 0 | 3
+0- Inertia moment is = 0.1861158081
+0- The error on Inertia moment is = 0.003702080842 %
+Core 0 Elapsed time = 1.863026857
+============
+============ 1 | 3 | 10 | 1 | 1
+0- Inertia moment is = 0.1861088162
+0- The error on Inertia moment is = 5.483050095e-05 %
+Core 0 Elapsed time = 1.89196825
+============
+============ 1 | 3 | 10 | 1 | 2
+0- Inertia moment is = 0.18611373
+0- The error on Inertia moment is = 0.002585439453 %
+Core 0 Elapsed time = 1.796709538
+============
+============ 1 | 3 | 10 | 1 | 3
+0- Inertia moment is = 0.1861089182
+0- The error on Inertia moment is = 3.877541027e-13 %
+Core 0 Elapsed time = 18.94058967
+============
+============ 4 | 3 | 10 | 0 | 1
+0- Inertia moment is = 0.1872226101
+0- The error on Inertia moment is = 0.5984086328 %
+Core 0 Elapsed time = 0.4275810719
+============
+============ 4 | 3 | 10 | 0 | 2
+0- Inertia moment is = 0.2327027655
+0- The error on Inertia moment is = 25.035795 %
+Core 0 Elapsed time = 0.4433043003
+============
+============ 4 | 3 | 10 | 0 | 3
+0- Inertia moment is = 0.1861158081
+0- The error on Inertia moment is = 0.003702080842 %
+Core 0 Elapsed time = 0.5344383717
+============
+============ 4 | 3 | 10 | 1 | 1
+0- Inertia moment is = 0.1861088162
+0- The error on Inertia moment is = 5.483050069e-05 %
+Core 0 Elapsed time = 0.5312104225
+============
+============ 4 | 3 | 10 | 1 | 2
+0- Inertia moment is = 0.18611373
+0- The error on Inertia moment is = 0.002585439453 %
+Core 0 Elapsed time = 0.5328660011
+============
+============ 4 | 3 | 10 | 1 | 3
+0- Inertia moment is = 0.1861089182
+0- The error on Inertia moment is = 1.938770514e-13 %
+Core 0 Elapsed time = 4.937538385
+============
+||||| UNIFORM UP TO 16 |||||
+============ 1 | 3 | 10 | 0 | 1
+0- 9 Pi/25 is = 1.1328125
+0- The error on 9 Pi/25 is = 0.1626160952 %
+Core 0 Elapsed time = 2.022344112
+============
+============ 1 | 3 | 10 | 0 | 2
+0- 9 Pi/25 is = 0.56640625
+0- The error on 9 Pi/25 is = 49.91869195 %
+Core 0 Elapsed time = 1.88690877
+============
+============ 1 | 3 | 10 | 0 | 3
+0- 9 Pi/25 is = 1.1328125
+0- The error on 9 Pi/25 is = 0.1626160952 %
+Core 0 Elapsed time = 2.9817307
+============
+============ 1 | 3 | 10 | 1 | 1
+0- 9 Pi/25 is = 1.132149402
+0- The error on 9 Pi/25 is = 0.1039853599 %
+Core 0 Elapsed time = 2.565870047
+============
+============ 1 | 3 | 10 | 1 | 2
+0- 9 Pi/25 is = 0.566074701
+0- The error on 9 Pi/25 is = 49.94800732 %
+Core 0 Elapsed time = 2.106788158
+============
+============ 1 | 3 | 10 | 1 | 3
+0- 9 Pi/25 is = 1.132149402
+0- The error on 9 Pi/25 is = 0.1039853599 %
+Core 0 Elapsed time = 28.8012321
+============
+============ 4 | 3 | 10 | 0 | 1
+0- 9 Pi/25 is = 1.1328125
+0- The error on 9 Pi/25 is = 0.1626160952 %
+Core 0 Elapsed time = 0.5405607224
+============
+============ 4 | 3 | 10 | 0 | 2
+0- 9 Pi/25 is = 0.56640625
+0- The error on 9 Pi/25 is = 49.91869195 %
+Core 0 Elapsed time = 0.551617384
+============
+============ 4 | 3 | 10 | 0 | 3
+0- 9 Pi/25 is = 1.1328125
+0- The error on 9 Pi/25 is = 0.1626160952 %
+Core 0 Elapsed time = 0.768982172
+============
+============ 4 | 3 | 10 | 1 | 1
+0- 9 Pi/25 is = 1.132149402
+0- The error on 9 Pi/25 is = 0.1039853599 %
+Core 0 Elapsed time = 0.667573452
+============
+============ 4 | 3 | 10 | 1 | 2
+0- 9 Pi/25 is = 0.566074701
+0- The error on 9 Pi/25 is = 49.94800732 %
+Core 0 Elapsed time = 0.6686635017
+============
+============ 4 | 3 | 10 | 1 | 3
+0- 9 Pi/25 is = 1.132149402
+0- The error on 9 Pi/25 is = 0.1039853599 %
+Core 0 Elapsed time = 7.59903717
+============

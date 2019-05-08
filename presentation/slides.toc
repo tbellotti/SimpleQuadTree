@@ -1,0 +1,17 @@
+\beamer@sectionintoc {1}{Introduction}{1}{0}{1}
+\beamer@subsectionintoc {1}{1}{Aims of the project}{1}{0}{1}
+\beamer@sectionintoc {2}{Quadtrees}{5}{0}{2}
+\beamer@sectionintoc {3}{Quadtrees}{6}{0}{3}
+\beamer@sectionintoc {4}{Quadtrees}{7}{0}{4}
+\beamer@sectionintoc {5}{Quadtrees}{8}{0}{5}
+\beamer@sectionintoc {6}{Models and tools to understand what follows}{10}{0}{6}
+\beamer@subsectionintoc {6}{1}{Level-set theory}{10}{0}{6}
+\beamer@subsectionintoc {6}{2}{Gaussian quadrature}{14}{0}{6}
+\beamer@subsectionintoc {6}{3}{Rgb colors and their ``distance''}{15}{0}{6}
+\beamer@sectionintoc {7}{Implementation}{17}{0}{7}
+\beamer@subsectionintoc {7}{1}{Classes}{17}{0}{7}
+\beamer@subsectionintoc {7}{2}{Parallelization of the quadrature}{22}{0}{7}
+\beamer@sectionintoc {8}{Test and results}{23}{0}{8}
+\beamer@subsectionintoc {8}{1}{Construction of highly adaptive grids}{23}{0}{8}
+\beamer@subsectionintoc {8}{2}{Numerical quadrature}{23}{0}{8}
+\beamer@subsectionintoc {8}{3}{Image compression}{28}{0}{8}

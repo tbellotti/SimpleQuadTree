@@ -1,0 +1,17 @@
+\BOOKMARK [2][]{Outline0.1}{Introduction}{}% 1
+\BOOKMARK [3][]{Outline0.1.1.1}{Aims of the project}{Outline0.1}% 2
+\BOOKMARK [2][]{Outline0.2}{Quadtrees}{}% 3
+\BOOKMARK [2][]{Outline0.3}{Quadtrees}{}% 4
+\BOOKMARK [2][]{Outline0.4}{Quadtrees}{}% 5
+\BOOKMARK [2][]{Outline0.5}{Quadtrees}{}% 6
+\BOOKMARK [2][]{Outline0.6}{Models and tools to understand what follows}{}% 7
+\BOOKMARK [3][]{Outline0.6.1.10}{Level-set theory}{Outline0.6}% 8
+\BOOKMARK [3][]{Outline0.6.2.14}{Gaussian quadrature}{Outline0.6}% 9
+\BOOKMARK [3][]{Outline0.6.3.15}{Rgb colors and their ``distance''}{Outline0.6}% 10
+\BOOKMARK [2][]{Outline0.7}{Implementation}{}% 11
+\BOOKMARK [3][]{Outline0.7.1.17}{Classes}{Outline0.7}% 12
+\BOOKMARK [3][]{Outline0.7.2.22}{Parallelization of the quadrature}{Outline0.7}% 13
+\BOOKMARK [2][]{Outline0.8}{Test and results}{}% 14
+\BOOKMARK [3][]{Outline0.8.1.23}{Construction of highly adaptive grids}{Outline0.8}% 15
+\BOOKMARK [3][]{Outline0.8.2.23}{Numerical quadrature}{Outline0.8}% 16
+\BOOKMARK [3][]{Outline0.8.3.28}{Image compression}{Outline0.8}% 17
