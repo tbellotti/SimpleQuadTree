@@ -31,7 +31,7 @@ SRCDIR = $(PWD)/src
 # I have to put and update the two since I have a quite complicated way of structuring the 
 # folders, thus there is not always a correspondence between folder for the executables
 # and the objects/source files.
-EXE = $(BINDIR)/test/basic_bricks $(BINDIR)/test/image_compression $(BINDIR)/test/quadtree_highly_adaptive_mesh $(BINDIR)/test/quadtree_other_meshes $(BINDIR)/test/quadtree_integration $(BINDIR)/imagecompression $(BINDIR)/test/quadtree_time_evolving_mesh $(BINDIR)/test/mpi_pi $(BINDIR)/test/mpi_gauss $(BINDIR)/test/mpi_square $(BINDIR)/test/mpi_unif
+EXE = $(BINDIR)/test/basic_bricks $(BINDIR)/test/image_compression $(BINDIR)/test/quadtree_highly_adaptive_mesh $(BINDIR)/test/quadtree_other_meshes $(BINDIR)/test/quadtree_integration $(BINDIR)/imagecompression $(BINDIR)/test/quadtree_time_evolving_mesh $(BINDIR)/test/mpi_pi $(BINDIR)/test/mpi_gauss $(BINDIR)/test/mpi_square $(BINDIR)/test/mpi_unif 
 OBJ = $(BUILDDIR)/test/basic_bricks.o $(BUILDDIR)/test/image_compression.o $(BUILDDIR)/test/quadtree_highly_adaptive_mesh.o $(BUILDDIR)/test/quadtree_other_meshes.o $(BUILDDIR)/test/quadtree_integration.o $(BUILDDIR)/main/imagecompression.o $(BUILDDIR)/test/quadtree_time_evolving_mesh.o $(BUILDDIR)/test/mpi_pi.o $(BUILDDIR)/test/mpi_gauss.o $(BUILDDIR)/test/mpi_square.o $(BUILDDIR)/test/mpi_unif.o
 
 all : $(EXE)
@@ -61,39 +61,46 @@ $(BUILDDIR)/test/%.o: $(SRCDIR)/test/%.cpp
 # Compiling RGBCOLOR
 $(BUILDDIR)/rgbcolor.o : $(SRCDIR)/rgbcolor.cpp
 
+# Compiling USEFUL
+$(BUILDDIR)/useful.o : $(SRCDIR)/useful.cpp
+
+# Compiling PARALLEL_INTEGRATION
+$(BUILDDIR)/parallel_integration.o : $(SRCDIR)/parallel_integration.cpp
+	$(MPICOMP) -c -MP -MD $< -o $@
+
 # Compiling and linking the BASIC_BRICKS example
 $(BUILDDIR)/test/basic_bricks.o : $(SRCDIR)/test/basic_bricks.cpp 
-$(BINDIR)/test/basic_bricks : $(BUILDDIR)/test/basic_bricks.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/basic_bricks : $(BUILDDIR)/test/basic_bricks.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
 # Compiling and linking the IMAGE_COMPRESSION example
 $(BUILDDIR)/test/image_compression.o : $(SRCDIR)/test/image_compression.cpp
-$(BINDIR)/test/image_compression : $(BUILDDIR)/test/image_compression.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/image_compression : $(BUILDDIR)/test/image_compression.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
 # Compiling and linking the QUADTREE_HIGHLY_ADAPTIVE_MESH example
 $(BUILDDIR)/test/quadtree_highly_adaptive_mesh.o : $(SRCDIR)/test/quadtree_highly_adaptive_mesh.cpp 
-$(BINDIR)/test/quadtree_highly_adaptive_mesh : $(BUILDDIR)/test/quadtree_highly_adaptive_mesh.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/quadtree_highly_adaptive_mesh : $(BUILDDIR)/test/quadtree_highly_adaptive_mesh.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
 # Compiling and linking the QUADTREE_OTHER_MESHES example
 $(BUILDDIR)/test/quadtree_other_meshes.o : $(SRCDIR)/test/quadtree_other_meshes.cpp
-$(BINDIR)/test/quadtree_other_meshes : $(BUILDDIR)/test/quadtree_other_meshes.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/quadtree_other_meshes : $(BUILDDIR)/test/quadtree_other_meshes.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
 # Compiling and linking the QUADTREE_INTEGRATION example
 $(BUILDDIR)/test/quadtree_integration.o : $(SRCDIR)/test/quadtree_integration.cpp
-$(BINDIR)/test/quadtree_integration : $(BUILDDIR)/test/quadtree_integration.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/quadtree_integration : $(BUILDDIR)/test/quadtree_integration.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
 # Compiling and linking the IMAGECOMPRESSION program
 $(BUILDDIR)/main/imagecompression.o : $(SRCDIR)/main/imagecompression.cpp 
-$(BINDIR)/imagecompression : $(BUILDDIR)/main/imagecompression.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/imagecompression : $(BUILDDIR)/main/imagecompression.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
 # Compiling and linking the quadtree_time_evolving_mesh test
 $(BUILDDIR)/test/quadtree_time_evolving_mesh.o : $(SRCDIR)/test/quadtree_time_evolving_mesh.cpp
-$(BINDIR)/test/quadtree_time_evolving_mesh : $(BUILDDIR)/test/quadtree_time_evolving_mesh.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/quadtree_time_evolving_mesh : $(BUILDDIR)/test/quadtree_time_evolving_mesh.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	$(CXX) $^ $(CXXFLAGS) -o $@
 
 # I cannot use the flag suggested because they generate too many errors
@@ -102,29 +109,33 @@ $(BINDIR)/test/quadtree_time_evolving_mesh : $(BUILDDIR)/test/quadtree_time_evol
 # Compiling and linking the MPI_PI test
 $(BUILDDIR)/test/mpi_pi.o : $(SRCDIR)/test/mpi_pi.cpp
 	mpicxx -c -MP -MD $< -o $@
-$(BINDIR)/test/mpi_pi : $(BUILDDIR)/test/mpi_pi.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/mpi_pi : $(BUILDDIR)/test/mpi_pi.o $(BUILDDIR)/parallel_integration.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	mpicxx $^  -o $@
 
 # Compiling and linking the MPI_GAUSS test
 $(BUILDDIR)/test/mpi_gauss.o : $(SRCDIR)/test/mpi_gauss.cpp
 	mpicxx -c -MP -MD $< -o $@
-$(BINDIR)/test/mpi_gauss : $(BUILDDIR)/test/mpi_gauss.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/mpi_gauss : $(BUILDDIR)/test/mpi_gauss.o $(BUILDDIR)/parallel_integration.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	mpicxx $^  -o $@
 
 # Compiling and linking the MPI_SQUARE test
 $(BUILDDIR)/test/mpi_square.o : $(SRCDIR)/test/mpi_square.cpp
 	mpicxx -c -MP -MD $< -o $@
-$(BINDIR)/test/mpi_square : $(BUILDDIR)/test/mpi_square.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/mpi_square : $(BUILDDIR)/test/mpi_square.o $(BUILDDIR)/parallel_integration.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	mpicxx $^  -o $@
 
 # Compiling and linking the MPI_UNIF test
 $(BUILDDIR)/test/mpi_unif.o : $(SRCDIR)/test/mpi_unif.cpp
 	mpicxx -c -MP -MD $< -o $@
-$(BINDIR)/test/mpi_unif : $(BUILDDIR)/test/mpi_unif.o $(BUILDDIR)/rgbcolor.o 
+$(BINDIR)/test/mpi_unif : $(BUILDDIR)/test/mpi_unif.o $(BUILDDIR)/parallel_integration.o $(BUILDDIR)/rgbcolor.o $(BUILDDIR)/useful.o
 	mpicxx $^  -o $@
 
+
+
+
 clean : 
-	$(RM) -rf $(OBJ) $(OBJ:.o=.d)
+	$(RM) -rf $(BUILDDIR)/*.o $(BUILDDIR)/*.d $(BUILDDIR)/main/*.o $(BUILDDIR)/main/*.d $(BUILDDIR)/test/*.o $(BUILDDIR)/test/*.d
+
 
 distclean : clean
 	$(RM) -rf $(EXE)
