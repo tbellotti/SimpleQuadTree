@@ -8,20 +8,39 @@
 
 \usefonttheme{serif} 
 
+\title{APC Project: SimpleQuadTree}
+\author{Thomas Bellotti}
+\date{\today}
+
 %\usepackage{mathpazo} % add possibly `sc` and `osf` options
 
 
 \begin{document}
 
+\begin{frame}
+ \maketitle
+\end{frame}
+
+
 \section{Introduction}
+\begin{frame}
+ \begin{center}
+  \begin{huge}
+   Introduction
+  \end{huge}
+ \end{center}
+\end{frame}
+
 \subsection{Aims of the project}
 \begin{frame}
 \frametitle{Aims of the project}
 \pause
+Original target:
 \begin{block}{Aim 1}
  Construct \textbf{highly adaptive Cartesian non-uniform meshes} on which we can perform \textbf{numerical quadrature} and eventually implement \textbf{numerical solvers for PDEs}, mainly based on the Finite Volume method.
 \end{block}
 \pause
+After some work...
 \begin{block}{Aim 2}
 Implement a simple method to \textbf{compress digital images}, which recognizes large areas of almost uniform color. Could be eventually used also for shape recognition. 
 \end{block}
@@ -32,11 +51,12 @@ These two objectives may seems quite far one from the other but actually they ca
 \end{frame}
 \begin{frame}
 
-\section{Quadtrees}
+\subsection{Quadtrees}
 \frametitle{What is a quadtree}
 \pause
-Basically just an unbalances tree structure allowing \textbf{four children}. Generalized in 3D by the octrees.
-\pause
+Basically just an unbalanced tree structure allowing \textbf{four children}. Generalized in 3D by the octrees.
+ \pause
+ It has a clear geometrical counterpart in terms of AMR (Adaptive Mesh Refinement), where they are built by \textbf{recursively splitting} larger cells.
 \begin{figure}[!h]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{./figures/quadtree.eps}
@@ -46,25 +66,33 @@ Image from: T. Bellotti, M. Theillard - A coupled level-set and reference map me
 \end{tiny}
 \end{center}
 \end{figure}
- \pause
- It has a clear geometrical counterpart.
 \end{frame}
+\subsection{Some terminology}
 \begin{frame}
  \frametitle{Some terminology}
+ \pause
  \begin{itemize}
- \item Leaf.
-  \item Level
-  \item Maximum level
-  \item Minimum level.
+ \item \textbf{Leaf}: cell without children.\pause
+  \item \textbf{Level} (of a cell): number of times the largest cell has been split to generate the current cell.\pause
+  \item \textbf{Maximum level} ($\text{max}_{\text{level}}$): maximum number of allowed splits.
+  \item \textbf{Minimum level} ($\text{min}_{\text{level}}$): minimum number of necessary splits.
  \end{itemize}
 
 \end{frame}
 
 \section{Models and tools to understand what follows}
+\begin{frame}
+ \begin{center}
+  \begin{huge}
+   Models and tools to understand what follows
+  \end{huge}
+ \end{center}
+\end{frame}
 \subsection{Level-set theory}
 \begin{frame}
  \frametitle{Level-set theory}
- In this work, we only see it as a \textbf{strategy to build} beautiful and meaningful \textbf{adaptive meshes} (there is more than this).
+ \pause
+ In this work, we only see it as a \textbf{strategy to build} beautiful and meaningful \textbf{adaptive meshes} (there is more than this).\pause
  \begin{figure}[!h]
 \begin{center}
 \includegraphics[width=0.7\textwidth]{./figures/levelset}
@@ -93,10 +121,21 @@ It is probably the easiest way of \textbf{representing an interface} in a comput
  \pause
 \end{block}
 Notice that, given $\Gamma$, the level-set is not unique, but this is not our problem now. It is unique if we assume (and we will do so) that $\phi(x,y)$ is nothing but the \textbf{signed distance} of $(x,y)$ from $\Gamma$.
+\pause
 \begin{equation*}
  \text{split ~}\mathcal{C} ~ \text{if} \quad : \quad  \left | \phi(\mathbf{x}_{\mathcal{C}}) \right | \leq \text{Lip}(\phi) \cdot \text{diag}(\mathcal{C}) \qquad \text{and} \qquad \text{level}(\mathcal{C}) \leq \textrm{max}_{\textrm{level}},
 \end{equation*}
 This naively means that we split a cell wheather its diagonal length exceeds the distance from the interface $\Gamma$ represented by the level-set $\phi$.
+\end{frame}
+
+\begin{frame}
+ And the result can be\dots Very nice!
+  \begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{./figures/integrator/pi_1.pdf}
+\end{center}
+\end{figure}
+ 
 \end{frame}
 
 
@@ -104,17 +143,18 @@ This naively means that we split a cell wheather its diagonal length exceeds the
 \subsection{Gaussian quadrature}
 \begin{frame}
  \frametitle{Gaussian quadrature}
+ \pause
  Considering a stardard quadrilateral domain $\Omega = [-1,1]^2$ and given a possibly smooth function $f : \Omega \to \mathbb{R}$, we want to compute:
  \begin{equation*}
   \int_{\Omega} f(x,y)dxdy.
  \end{equation*}
 This can be done by quadrature formulae, based on simple evaluation of the function $f$ at certain points of the domain.
-For our purpose, we use two choices:
+For our purpose, we use two choices:\pause
 \begin{enumerate}
  \item \textbf{``Naive'' formula}, with only one function evaluation.
  \begin{equation*}
   \int_{\Omega}f(x,y)dx dy \simeq |\Omega| f(0,0)  = 4 f(0,0)
- \end{equation*}
+ \end{equation*}\pause
  \item \textbf{3rd order Gaussian formula}, with nine function evaluations (plus extra computations to adapt to a generic domain).
  \begin{align*}
   \int_{\Omega} f(x,y)dx dy &\simeq \frac{5}{81} \left [ 5 f \left (-\sqrt{\frac{3}{5}},-\sqrt{\frac{3}{5}} \right ) + 8 f \left (0,-\sqrt{\frac{3}{5}} \right ) + 5 f \left (\sqrt{\frac{3}{5}},-\sqrt{\frac{3}{5}} \right )\right ] \\
@@ -130,21 +170,22 @@ For our purpose, we use two choices:
 \subsection{Rgb colors and their ``distance''}
 \begin{frame}
  \frametitle{Rgb colors and their ``distance''}
- It is probably the simplest way of representing colors, as a combination of three components, \textbf{red, green and blue}.
+ \pause
+ It is probably the simplest way of representing colors, as a combination of three components, \textbf{\textcolor{red}{red}, \textcolor{green}{green} and \textcolor{blue}{blue}}.
  Thus, a color $C$ is nothing else than a triplet:
  \begin{equation*}
-  C = \left [ C_{\text{red}}, C_{\text{green}}, C_{\text{blue}}\right ],
+  C = \left [ \textcolor{red}{C_{\text{red}}}, \textcolor{green}{C_{\text{green}}}, \textcolor{blue}{C_{\text{blue}}} \right ],
  \end{equation*}
-where $C_{\text{red}},C_{\text{green}},C_{\text{blue}} \in \{0,\dots, 255 \}$. In this way, we can represent 16'777'216 different tones.
- 
+where $\textcolor{red}{C_{\text{red}}},\textcolor{green}{C_{\text{green}}},\textcolor{blue}{C_{\text{blue}}} \in \{0,\dots, 255 \}$. In this way, we can represent 16,777,216 different tones.
+ \pause
  For our purpose, it is useful to define the notion of \textbf{distance} between two colors, which can be defined in many ways. In our case, we use the simple ``corrected'' formula:
  \begin{equation*}
-  d(C^1,C^2) = \sqrt{2 \left (C^1_{\text{red}}-C^2_{\text{red}} \right )^2 + 4 \left (C^1_{\text{green}}-C^2_{\text{green}} \right )^2 + 3 \left (C^1_{\text{blue}}-C^2_{\text{blue}} \right )^2}.
- \end{equation*}
+  d(C^1,C^2) = \sqrt{\textcolor{red}{2 \left (C^1_{\text{red}}-C^2_{\text{red}} \right )^2} + \textcolor{green}{4 \left (C^1_{\text{green}}-C^2_{\text{green}} \right )^2} + \textcolor{blue}{3 \left (C^1_{\text{blue}}-C^2_{\text{blue}} \right )^2}}.
+ \end{equation*}\pause
 The mean color between $\left \{ C^1, \dots, C^N\right \} $ is defined by:
 \begin{equation*}
- \overline{C} \left ( \left \{ C^1, \dots, C^N\right \} \right ) = \left[ \frac{1}{N} \sum_{n=1}^N C_{\text{red}}^n, \frac{1}{N} \sum_{n=1}^N C_{\text{green}}^n, \frac{1}{N} \sum_{n=1}^N C_{\text{blue}}^n\right ],
-\end{equation*}
+ \overline{C} \left ( \left \{ C^1, \dots, C^N\right \} \right ) = \left[ \textcolor{red}{\frac{1}{N} \sum_{n=1}^N C_{\text{red}}^n}, \textcolor{green}{\frac{1}{N} \sum_{n=1}^N C_{\text{green}}^n},\textcolor{blue}{ \frac{1}{N} \sum_{n=1}^N C_{\text{blue}}^n}\right ],
+\end{equation*}\pause
 and a sort of standard deviation as:
 \begin{equation*}
  \sigma  \left ( \left \{ C^1, \dots, C^N\right \} \right ) = \frac{1}{N} \sqrt{\sum_{n=1}^N d(C_n,\overline{C})^2} \in [0,765].
@@ -153,10 +194,11 @@ and a sort of standard deviation as:
 
 \begin{frame}
  \frametitle{How to compress an image?}
+ \pause
  Let $\mathcal{P}$ be a preleave whose children are $\mathcal{L}(\mathcal{P})$. We define a tolerance $0< \epsilon \ll 1$. Then:
  \begin{equation*}
   \text{merge} \quad \mathcal{P} \quad \text{if} ~ : ~ \sigma  \left ( \mathcal{L}(\mathcal{P}) \right ) \leq 765 \cdot \epsilon.
- \end{equation*}
+ \end{equation*}\pause
 In the case of merging, we consider:
 \begin{equation*}
  C_{\mathcal{P}} = \overline{C} \left ( \mathcal{L}(\mathcal{P}) \right ).
@@ -167,10 +209,19 @@ In the case of merging, we consider:
 
 
 \section{Implementation}
+\begin{frame}
+ \begin{center}
+  \begin{huge}
+   Implementation
+  \end{huge}
+ \end{center}
+\end{frame}
+
 
 \subsection{Classes}
 \begin{frame}
  \frametitle{The Cell class}
+ \pause
   \begin{figure}[!h]
 \begin{center}
 \includegraphics[width=0.75\textwidth]{./figures/cell_h.eps}
@@ -179,11 +230,11 @@ In the case of merging, we consider:
 \end{frame}
 
 \begin{frame}
- \frametitle{The Pixel class inheriting from Cell}
+ \frametitle{The Pixel class inheriting from Cell}\pause
  The ``generalized'' pixel is basically a Cell...
   \begin{figure}[!h]
 \begin{center}
-\includegraphics[width=0.5\textwidth]{./figures/pixel_h.eps}
+\includegraphics[width=0.6\textwidth]{./figures/pixel_h.eps}
 \end{center}
 \end{figure}
 plus a \textbf{color}.
@@ -191,17 +242,17 @@ We have to be careful to \textbf{cast pointers} when we need to extract informat
 \end{frame}
 
 \begin{frame}
- \frametitle{The QuadTree class}
-This class is mostly a \textbf{wrapper} of the Cell class.
+ \frametitle{The QuadTree class}\pause
+This class is mostly a \textbf{wrapper} of the Cell class, but it is what the user interacts with.
 \begin{figure}[!h]
 \begin{center}
-\includegraphics[width=0.75\textwidth]{./figures/quadtree_h.eps}
+\includegraphics[width=0.9\textwidth]{./figures/quadtree_h.eps}
 \end{center}
 \end{figure}
 \end{frame}
 
 \begin{frame}
- \frametitle{The Image class}
+ \frametitle{The Image class}\pause
 This class is mostly a \textbf{wrapper} of the Pixel class.
 We distinguished it from the QuadTree class (it does not inherit from it) because there are many features that they do not share.
 \begin{figure}[!h]
@@ -212,27 +263,29 @@ We distinguished it from the QuadTree class (it does not inherit from it) becaus
 \end{frame}
 
 \begin{frame}
- \frametitle{The way we update the mesh: the RefinementCriterion class}
+ \frametitle{The way we update the mesh: the RefinementCriterion class}\pause
 This is a very simple \textbf{abstract class} with an operator telling us if we have to split a Cell or not.
 \begin{figure}[!h]
 \begin{center}
-\includegraphics[width=0.55\textwidth]{./figures/refinementcriterion_h.eps}
+\includegraphics[width=0.6\textwidth]{./figures/refinementcriterion_h.eps}
 \end{center}
-\end{figure}
+\end{figure}\pause
 Many important criteria inherit from it:
 \begin{figure}[!h]
 \begin{center}
-\includegraphics[width=0.55\textwidth]{./figures/RefineAlwaysCriterion_h.eps}
-\includegraphics[width=0.55\textwidth]{./figures/LevelSetCriterion_h.eps}
-\includegraphics[width=0.55\textwidth]{./figures/CriterionVariance_h.eps}
+\includegraphics[width=0.6\textwidth]{./figures/RefineAlwaysCriterion_h.eps}
+\includegraphics[width=0.6\textwidth]{./figures/LevelSetCriterion_h.eps}
+\includegraphics[width=0.6\textwidth]{./figures/CriterionVariance_h.eps}
 \end{center}
 \end{figure}
 \end{frame}
 
 
-
 \subsection{Parallelization of the quadrature}
 \begin{frame}
+\frametitle{How we parallelize the quadrature}\pause
+We want to take advantage of the \textbf{modular nature} of the quadtree structure in order to \textbf{avoid communications} between processes.
+\pause
 
 The key idea is to have a number of core which is a power of 4 and have a minimum level large enough, so that we can avoid communications between cores and each of them has a local tree (no shared memory).
  \begin{figure}[!h]
@@ -243,12 +296,34 @@ The key idea is to have a number of core which is a power of 4 and have a minimu
 
 And each subtree (core) integrates independently. At the very end, the sub-integrals are summed with a \textbf{reduce} procedure.
 \end{frame}
-\section{Test and results}
+
+\section{Tests and results}
+\begin{frame}
+ \begin{center}
+  \begin{huge}
+   Tests and results
+  \end{huge}
+ \end{center}
+\end{frame}
+
 \subsection{Construction of highly adaptive grids}
+
+\begin{frame}
+\frametitle{We are able to construct very general meshes}\pause
+ \begin{figure}[!h]
+\begin{center}
+\includegraphics[width=0.35\textwidth]{./figures/level_set_color.pdf}
+\includegraphics[width=0.52\textwidth]{./figures/mandelbrot_criterion_color.pdf} \\
+\includegraphics[angle=90, width=0.6\textwidth]{./figures/space_criterion_color.pdf}
+\end{center}
+\end{figure}
+\end{frame}
 
 \subsection{Numerical quadrature}
 
 \begin{frame}
+\frametitle{We are able to perform parallel quadratures}
+\textbf{FINO A QUA!}
 Computations have been tested on \textbf{4 cores} with the following specifications:
 \begin{itemize}
  \item Product: Intel(R) Xeon(R) CPU E5-2673 v4 @ 2.30GHz
@@ -428,7 +503,8 @@ We refine in the ellipse within 10 standard deviations.
 \end{frame}
 
 \begin{frame}
-
+The inhomogeneity of the mesh does not play a very huge role since the time needed to construct and refine the mesh dominates over the time needed to integrate on it.
+Nevertheless, where the inhomogeneity is really strong, we observe the most important differences.
 \end{frame}
 
 
@@ -470,6 +546,16 @@ Three different $\epsilon$: $\epsilon = 0.012, 0.024, 0.048$.
 \end{frame}
 
 \section{Conclusions and perspectives}
+
+\begin{frame}
+ \begin{itemize}
+  \item Different way of storing the tree: time-efficiency, memory-efficiency, possibility of recovering neighbors.
+  \item Implement a way of finding neighbors (in our implementation, every cell should store a pointer to its father).
+  \item Improve data distribution between cores.
+ \end{itemize}
+
+\end{frame}
+
 
 \section{Bibliography}
 

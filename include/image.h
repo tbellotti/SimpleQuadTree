@@ -79,7 +79,7 @@ public:
     }
 
     // Import an image from a .ppm ascii file (see https://fr.wikipedia.org/wiki/Portable_pixmap)
-    void createFromFile(std::string filename)
+    void createFromFile(const std::string & filename)
     {
         // We support only square images with pixels on a side which are
         // powers of 2:
