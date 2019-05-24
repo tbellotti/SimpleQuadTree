@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{xcolor}
 
 \usepackage[tmargin=1.0in,bmargin=1.0in, lmargin=1.25in, rmargin=1.25in]{geometry}
 
@@ -97,6 +98,7 @@ Notice that there are many requirements on the number of cores used and the mini
 \end{itemize}
 
 \subsection{Example binaries}
+\textcolor{red}{\textbf{Caveat}: In many examples, since inside the .cpp file we use absolute paths to provide ouput files, one may need to change them according to its distribution of the project in order to test the code. We do apologize.}
 \subsubsection{General}
 \begin{itemize}
  \item \textbf{bin/basic\textunderscore bricks}, compiled starting from \texttt{src/test/basic\textunderscore bricks.cpp}, which tests some of the basic calls which make the code working. It is not really interesting, it has been used mainly for debugging purpose.
@@ -154,7 +156,7 @@ These are some of the examples of image compression.
 
 
 \section{How to compile output images}
-In order to compile the \LaTeX files which are the output used to visualize the quadtree structures, both as meshed and images, one must have a complete \LaTeX distribution of this system with the TiKz package installed.
+In order to compile the \LaTeX ~ files which are the output used to visualize the quadtree structures, both as meshed and images, one must have a complete \LaTeX ~ distribution of this system with the TiKz package installed.
 
 For small figures, writing
 \begin{center}

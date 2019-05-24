@@ -1,5 +1,14 @@
 #include "../../include/image.h"
 
+/*
+Should be called with three arguments: the name of the input file (in .ppm format),
+the name of the output file (which will be a \LaTeX file) and the threshold
+for the image compression.
+ 
+It performs the compression of the image according to our method. 
+Notice that the image must be square, with number of pixels per side 
+which is a power of 2, for the sake of simplicity.
+*/
 
 int main(int argc, char * argv[])
 {

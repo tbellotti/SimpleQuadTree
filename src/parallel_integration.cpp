@@ -1,6 +1,8 @@
 #include "../include/parallel_integration.h"
 
-
+// The arguments are : function to integrate / order of integration (0: naive, !0: 3rd order gaussian)
+// bottom left point of the square domain / top right point of the sqaure domain
+// minimum level / maximum level / refinement criterion for the tree
 
 double parallel_integration(const std::function<double(Point<double>)> & func, unsigned order,
                        const Point<double> & l_left, const Point<double> & u_right, 

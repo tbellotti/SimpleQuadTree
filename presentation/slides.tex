@@ -10,7 +10,7 @@
 
 \title{APC Project: SimpleQuadTree}
 \author{Thomas Bellotti}
-\date{\today}
+\date{24 - 05 - 2019}
 
 %\usepackage{mathpazo} % add possibly `sc` and `osf` options
 
@@ -20,6 +20,11 @@
 \begin{frame}
  \maketitle
 \end{frame}
+
+\begin{frame}
+ \tableofcontents
+\end{frame}
+
 
 
 \section{Introduction}
@@ -47,11 +52,12 @@ Implement a simple method to \textbf{compress digital images}, which recognizes 
 \pause
 
 These two objectives may seems quite far one from the other but actually they can be linked by... \textbf{Quadtrees}.
-
 \end{frame}
-\begin{frame}
 
 \subsection{Quadtrees}
+
+\begin{frame}
+
 \frametitle{What is a quadtree}
 \pause
 Basically just an unbalanced tree structure allowing \textbf{four children}. Generalized in 3D by the octrees.
@@ -62,7 +68,7 @@ Basically just an unbalanced tree structure allowing \textbf{four children}. Gen
 \includegraphics[width=0.8\textwidth]{./figures/quadtree.eps}
 
 \begin{tiny}
-Image from: T. Bellotti, M. Theillard - A coupled level-set and reference map method for interface representation with applications to two-phase flows simulation - 2018 in press: J. Comput. Phys.
+Image from: T. Bellotti, M. Theillard - A coupled level-set and reference map method for interface representation with applications to two-phase flows simulation - Volume 392, 2019, J. Comput. Phys.
 \end{tiny}
 \end{center}
 \end{figure}
@@ -98,7 +104,7 @@ Image from: T. Bellotti, M. Theillard - A coupled level-set and reference map me
 \includegraphics[width=0.7\textwidth]{./figures/levelset}
 
 \begin{tiny}
-Image from: T. Bellotti, M. Theillard - A coupled level-set and reference map method for interface representation with applications to two-phase flows simulation - 2018 in press: J. Comput. Phys.
+Image from: T. Bellotti, M. Theillard - A coupled level-set and reference map method for interface representation with applications to two-phase flows simulation - Volume 392, 2019, J. Comput. Phys.
 \end{tiny}
 \end{center}
 \end{figure}
@@ -323,7 +329,7 @@ And each subtree (core) integrates independently. At the very end, the sub-integ
 
 \begin{frame}
 \frametitle{We are able to perform parallel quadratures}
-\textbf{FINO A QUA!}
+\pause
 Computations have been tested on \textbf{4 cores} with the following specifications:
 \begin{itemize}
  \item Product: Intel(R) Xeon(R) CPU E5-2673 v4 @ 2.30GHz
@@ -503,6 +509,10 @@ We refine in the ellipse within 10 standard deviations.
 \end{frame}
 
 \begin{frame}
+\pause
+We observe that:
+\\
+
 The inhomogeneity of the mesh does not play a very huge role since the time needed to construct and refine the mesh dominates over the time needed to integrate on it.
 Nevertheless, where the inhomogeneity is really strong, we observe the most important differences.
 \end{frame}
@@ -511,6 +521,7 @@ Nevertheless, where the inhomogeneity is really strong, we observe the most impo
 \subsection{Image compression}
 \begin{frame}
 Three different $\epsilon$: $\epsilon = 0.012, 0.024, 0.048$.
+\pause
 \begin{center}
  \begin{figure}[!h]
  \begin{footnotesize}
@@ -518,6 +529,7 @@ Three different $\epsilon$: $\epsilon = 0.012, 0.024, 0.048$.
  \end{footnotesize}\\
 \includegraphics[width=0.9\textwidth]{./figures/s1_comp_small} \\
 \begin{footnotesize}131509 px - comp. ratio = 1.99 \hfill 84808 px - comp. ratio = 3.09 \hfill 38152 px - comp. ratio = 6.87 \end{footnotesize} \\
+\pause
 \includegraphics[width=0.9\textwidth]{./figures/s2_comp_small}\\
 \begin{footnotesize}115438 px - comp. ratio = 2.27 \hfill 69259 px - comp. ratio = 3.78 \hfill 27394 px - comp. ratio = 9.57 \end{footnotesize} \\
 \end{figure}
@@ -529,6 +541,7 @@ Three different $\epsilon$: $\epsilon = 0.012, 0.024, 0.048$.
  \begin{figure}[!h]
 \includegraphics[width=0.9\textwidth]{./figures/s3_comp_small} \\
 \begin{footnotesize}32188 px - comp. ratio = 8.14 \hfill 16405 px - comp. ratio = 15.98 \hfill 6571 px - comp. ratio = 39.89 \end{footnotesize} \\
+\pause
 \includegraphics[width=0.9\textwidth]{./figures/s4_comp_small}\\
 \begin{footnotesize}75172 px - comp. ratio = 3.49 \hfill 29890 px - comp. ratio = 8.77 \hfill 8902 px - comp. ratio = 29.45 \end{footnotesize} \\
 \end{figure}
@@ -548,13 +561,45 @@ Three different $\epsilon$: $\epsilon = 0.012, 0.024, 0.048$.
 \section{Conclusions and perspectives}
 
 \begin{frame}
+ \begin{center}
+  \begin{huge}
+   Conclusions and perspectives
+  \end{huge}
+ \end{center}
+\end{frame}
+
+\begin{frame}
+ \frametitle{Conclusions}
+ \pause
  \begin{itemize}
-  \item Different way of storing the tree: time-efficiency, memory-efficiency, possibility of recovering neighbors.
-  \item Implement a way of finding neighbors (in our implementation, every cell should store a pointer to its father).
-  \item Improve data distribution between cores.
+  \item We are able to construct \textbf{highly adaptive meshes} with virtually \textbf{any criterion}, achieving a selective refinement where actually needed. \pause
+  \item We are capable of \textbf{integrating in a parallel fashion} on the quadtree using \textbf{different quadrature rules}. \pause
+  \item We can perform \textbf{image compression} in a naive way based on the \textbf{color variance}, which significantly reduces the size of the images.
  \end{itemize}
 
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Perspective and main possible improvements}
+\pause
+ \begin{itemize}
+  \item \textbf{Different way of storing the tree}: it is a trade-off between time-efficiency, memory-efficiency and possibility of recovering neighbors. \pause
+  \item Implement a \textbf{way of finding neighbors} (in our implementation, every cell should store a pointer to its father). \pause
+  \item Improve \textbf{data distribution between cores} when performing parallel quadratures, in order to exploit any number of physical processors. \pause
+  \item \textbf{Use external libraries} to import and export more ``user-friendly'' image formats (see .png) 
+ \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\begin{center}
+ \begin{Huge}
+  Thank you!
+ \end{Huge}
+\end{center}
+\end{frame}
+
 
 
 \section{Bibliography}
